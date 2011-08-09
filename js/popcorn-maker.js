@@ -2,8 +2,7 @@
 
   window.addEventListener("DOMContentLoaded", function(){
     
-    var b  = new Butter();
-
+    var b  = new Butter(),
 		appController = window.appController,
 		tracks = JSON.parse(appController.tracksAsJSON()),
 		idx;
@@ -19,23 +18,21 @@
 		appController.editorDOMWindow.document.body.appendChild(targetDiv);
 
 		b.eventeditor({
-			//target: "butter-editor-div",
-			//defaultEditor: "lib/defaultEditor.html",
 			target: targetDiv,
 			defaultEditor: "popcorn-maker/lib/defaultEditor.html",
+      /*
 			editorWidth: "98%",
 			editorHeight: "98%"
+      */
 		});
 
 		b.previewer({
 			layout: "layouts/default.html",
-			target: "previewer-iframe",
+      target: "main",
 			popcornURL: "lib/popcorn-complete.js",
-			//media: "http://robothaus.org/bugs/video/brendan1.ogv",
-			//media: "trailer.mp4",
       media: appController.moviePath,
 			callback: function() {
-				b.buildPopcorn("outerVideo", function() {
+				b.buildPopcorn( b.getCurrentMedia(), function() {
 					for (idx = 0; idx < tracks.length; idx++) {
 						var events = tracks[idx].events;
 						var eventIdx;
@@ -45,7 +42,6 @@
 
 						for (eventIdx = 0; eventIdx < events.length; eventIdx++) {
 							var event = events[eventIdx];
-console.log(event);
 
 							var butterTrackEvent = new Butter.TrackEvent({
 								type: event.type,
