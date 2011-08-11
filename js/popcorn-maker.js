@@ -1,5 +1,6 @@
 (function(){
 
+  window.addEventListener("DOMContentLoaded", function(){
     
     // purposely making b a global variable so that
     // Popcorn Maker FCP has access to it
@@ -14,22 +15,22 @@
     var targetDiv = appController.editorDOMWindow.document.createElement("div");
 
     targetDiv.id = "me";
-    targetDiv.style.width = "400px";
-    targetDiv.style.height = "500px";
+    targetDiv.style.width = "100%";
+    targetDiv.style.height = "100%";
     targetDiv.style.border = "1px solid black";
     appController.editorDOMWindow.document.body.appendChild(targetDiv);
 
     b.eventeditor({
       target: targetDiv,
-      defaultEditor: "popcorn-maker/lib/defaultEditor.html",
-      /*
-      editorWidth: "98%",
-      editorHeight: "98%"
-      */
+      //defaultEditor: "popcorn-maker/lib/defaultEditor.html",
+      defaultEditor: "popcorn-maker/lib/popcornMakerEditor.html",
+      editorWidth: "101%",
+      editorHeight: "101%"
     });
 
     b.previewer({
-      layout: "external/layouts/city-slickers/index.html",
+      //layout: "external/layouts/city-slickers/index.html",
+      layout: "layouts/default.html",
       target: "main",
       popcornURL: "lib/popcorn-complete.js",
       media: appController.moviePath,
@@ -81,11 +82,12 @@
     $(".p-timeline-title").html( "Untitled Project" );
 
     b.listen( "clientdimsupdated", function( e ) {
-      $('#popup-4')
+      $(targetDiv)
       .css( "height", e.data.height + "px" )
       .css("width", e.data.width + "px" );
     }, "comm" );
     
+    /*
     b.listen ( "trackeditstarted", function() {
       
       $('.close-div').fadeOut('fast');
@@ -93,6 +95,7 @@
       $('#popup-4').show();
       $(' .balck-overlay ').hide();
     });
+    */
     
     b.listen ( "trackeditclosed", function() {
       $('.close-div').fadeOut('fast');
