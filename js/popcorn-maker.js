@@ -32,7 +32,6 @@
       //layout: "external/layouts/city-slickers/index.html",
       layout: "layouts/default.html",
       target: "main",
-      popcornURL: "lib/popcorn-complete.js",
       media: appController.moviePath,
       callback: function() {
         b.buildPopcorn( b.getCurrentMedia(), function() {
@@ -74,7 +73,7 @@
     
     b.timeline({ target: "timeline-div"});
 
-    b.addCustomEditor( "external/layouts/city-slickers/editor.html", "slickers" );
+    //b.addCustomEditor( "external/layouts/city-slickers/editor.html", "slickers" );
 
     //$('.enable-scroll').tinyscrollbar();
     
