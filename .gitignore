@@ -5,3 +5,6 @@ dist/
 .DS_Store
 profile
 
+server/bin
+server/include
+server/lib

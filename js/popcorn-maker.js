@@ -1,10 +1,10 @@
 (function(){
 
-  window.addEventListener("DOMContentLoaded", function(){
     
     // purposely making b a global variable so that
     // Popcorn Maker FCP has access to it
     b  = new Butter();
+    b.comm();
     var appController = window.appController,
     tracks = JSON.parse(appController.tracksAsJSON()),
     idx;
@@ -29,7 +29,7 @@
     });
 
     b.previewer({
-      layout: "layouts/default.html",
+      layout: "external/layouts/city-slickers/index.html",
       target: "main",
       popcornURL: "lib/popcorn-complete.js",
       media: appController.moviePath,
@@ -70,18 +70,24 @@
     });
     
     b.plugintray({ target: "plugin-tray", pattern: '<li class="$type_tool"><a href="#" title="$type"><span></span>$type</a></li>' });
-    b.addPlugin( { type: "image" } );
-    b.addPlugin( { type: "footnote" } );
-    b.addPlugin( { type: "twitter" } );
-    b.addPlugin( { type: "webpage" } );
-    b.addPlugin( { type: "subtitle" } );
-    b.addPlugin( { type: "googlenews" } );
     
     b.timeline({ target: "timeline-div"});
 
-    $('.enable-scroll').tinyscrollbar();
+    b.addCustomEditor( "external/layouts/city-slickers/editor.html", "slickers" );
+
+    //$('.enable-scroll').tinyscrollbar();
+    
+    b.setProjectDetails("title", "Untitled Project" );
+    $(".p-timeline-title").html( "Untitled Project" );
+
+    b.listen( "clientdimsupdated", function( e ) {
+      $('#popup-4')
+      .css( "height", e.data.height + "px" )
+      .css("width", e.data.width + "px" );
+    }, "comm" );
     
     b.listen ( "trackeditstarted", function() {
+      
       $('.close-div').fadeOut('fast');
       $('.popupDiv').fadeIn('slow');
       $('#popup-4').show();
@@ -92,6 +98,132 @@
       $('.close-div').fadeOut('fast');
       $('.popups').hide(); 
     });
+
+    var scrubber = document.getElementById( "scrubber" );
+    var layersDiv = document.getElementById( "layers-div" );
+    var scrubberContainer = document.getElementById( "scrubber-container" );
+    var tracksDiv = document.getElementById( "tracks-div" );
+    var progressBar = document.getElementById( "progress-bar" );
+
+    function checkScrubber( event ) {
+
+
+      layersDiv.style.top = -tracksDiv.scrollTop + "px";
+      scrubber.style.left = -tracksDiv.scrollLeft + b.currentTimeInPixels() + "px";
+      progressBar.style.width = -tracksDiv.scrollLeft + b.currentTimeInPixels() + "px";
+
+      var scrubberLeft = parseInt( scrubber.style.left, 10);
+
+      if ( scrubberLeft < 0 ) {
+
+        progressBar.style.width = "0px";
+      }
+
+      if ( scrubberLeft > scrubberContainer.offsetWidth ) {
+
+        progressBar.style.width = "100%";
+      }
+
+      if ( scrubberLeft < scrubberContainer.offsetWidth && scrubberLeft >= 0 ) {
+
+        scrubber.style.display = "block";
+      } else {
+
+        scrubber.style.display = "none";
+      }
+    }
+
+    b.listen( "mediatimeupdate", checkScrubber);
+    document.getElementById( "tracks-div" ).addEventListener( "scroll", checkScrubber, false );
+
+    b.listen( "mediatimeupdate", function() {
+
+      document.getElementById( "scrubber" ).style.left = b.currentTimeInPixels() + "px";
+    });
+
+    function create_msDropDown() {
+      try {
+        $(".projects-dd").msDropDown();
+      } catch( e ) {
+        alert( "Error: "+ e.message);
+      }
+    }
+    
+    // Load projects from localStorage //
+    
+    var projectsDrpDwn = $(".projects-dd"),
+    localProjects = localStorage.getItem( "PopcornMaker.SavedProjects" );
+    
+    localProjects = localProjects ? JSON.parse( localProjects ) : localProjects;
+
+    localProjects && $.each( localProjects, function( index, oneProject ) {
+      $( "<option/>", {
+        "value": oneProject.project.title,
+        "html": oneProject.project.title
+      }).appendTo( projectsDrpDwn );
+    });
+    
+    create_msDropDown()
+    
+    function loadProjectsFromServer(){
+      //load stuff from bobby's server
+    }
+    
+    loadProjectsFromServer();
+    
+    // Saving
+
+    $(".save-project-data-btn").click(function(){
+      
+      try {
+        var localProjects = localStorage.getItem( "PopcornMaker.SavedProjects" ),
+        projectToSave = b.exportProject(),
+        overwrite = false,
+        projectsDrpDwn = $( ".projects-dd" ) ;
+        
+        localProjects = localProjects ? JSON.parse( localProjects ) : [];
+        
+        for ( var i = 0, l = localProjects.length; i < l; i++ ) {
+          if ( localProjects[ i ].project.title === projectToSave.project.title ) {
+            localProjects[ i ] = projectToSave;
+            overwrite = true;
+          }
+        }
+        console.log(projectToSave);
+        !overwrite && localProjects.push( projectToSave ) && 
+        $( "<option/>", {
+          "value": projectToSave.project.title,
+          "html": projectToSave.project.title
+        }).appendTo( projectsDrpDwn );
+        localStorage.setItem( "PopcornMaker.SavedProjects", JSON.stringify( localProjects ) );
+        projectsDrpDwn[0].refresh()
+        window.alert( b.getProjectDetails( "title" ) + " was saved" );
+      }
+      catch ( e ) {
+        console.log( "Saving Failed!", e );
+      }
+    
+    });
+
+    $( ".edit-selected-project" ).click( function() {
+      var localProjects = localStorage.getItem( "PopcornMaker.SavedProjects" ),
+      projectsDrpDwn = $( ".projects-dd" );
+
+      if ( projectsDrpDwn[0].selectedIndex > -1 ) {
+
+        localProjects = localProjects ? JSON.parse( localProjects ) : [];
+        
+        for ( var i = 0, l = localProjects.length; i < l; i++ ) {
+          if ( localProjects[ i ].project.title === projectsDrpDwn[0].value ) {
+            b.clearProject();
+            b.importProject( localProjects[ i ] );
+            return;
+          }
+        }
+      }
+    });
+
+    //$('.enable-scroll').tinyscrollbar();
 
     $(".collapse-btn").toggle(function() {
 
@@ -137,12 +269,6 @@
       $(".sound-btn a span").css('backgroundPosition','0 0');
     });
 
-    try {
-      $(".websites2").msDropDown();
-    } catch(e) {
-      alert("Error: "+e.message);
-    }
-
     $('.timeline-heading .edit a').click(function(){
       $('.close-div').fadeOut('fast');
       $('.popupDiv').fadeIn('slow');
@@ -158,6 +284,10 @@
     });
 
     $('.p-3').click(function(){
+      
+      console.log("sdfsdf", $('<div/>').text( b.getHTML() ).html() );
+      $('.track-content').html( $('<div/>').text( b.getHTML() ).html() );
+      
       $('.close-div').fadeOut('fast');
       $('.popupDiv').fadeIn('slow');
       $('#popup-3').show();
@@ -165,9 +295,8 @@
     });
     
     $('.p-timeline-title').click(function(){
-      console.log(b.getProjectDetails( "title" ) );
       $('#project-title').val( b.getProjectDetails( "title" ) );
-      
+
       $('.close-div').fadeOut('fast');
       $('.popupDiv').fadeIn('slow');
       $('#popup-project-title').show();
@@ -206,7 +335,7 @@
     },
     c = $("#contentheader");
 
-    $('a[title!=""]', c).qtip(d.links);     
+    $('a[title!=""]', c).qtip(d.links);
 
   }, false);
 })();

@@ -87,7 +87,7 @@ header { height:44px;
 .my-projects-drpdwn { width:212px; margin-right:14px; float: left; position:relative}
 .my-projects-drpdwn .actions { opacity:1; width:14px; height:14px; top:1px; right:0;}
 .header-right form { float:left}
-.websites2 { width:177px !important}
+.projects-dd { width:177px !important}
 .header-buttons { float:left;}
 .header-buttons li, .popup-close-btn { float:left; margin-right:10px; width:24px; height:24px; border: 1px solid #282828 !important;
 	   -moz-border-radius: 3px;
@@ -256,7 +256,7 @@ padding: 0 2px;
 	        box-shadow: 0 1px 0 #737373, inset 0 1px 1px #131313;}
 .play-btn { position: absolute; left: 0; z-index: 999;}
 .timeline-progress-wrapper {padding:7px 30px 0 120px;}
-.timing-notches-div { padding:0 33px 0 122px; height:15px;}
+.timing-notches-div { padding:0px 0px 0px 0px; height:15px;}
 .timeline-sound-td { position: absolute; top:0; right:0;}
 .timing-notches { width:100%; background:url(../images/timing-notches.png) repeat-x; height:15px}
 
@@ -266,8 +266,8 @@ padding: 0 2px;
 	-webkit-box-shadow: inset 0 0 6px #131313;
 	     -o-box-shadow: inset 0 0 6px #131313;
 	        box-shadow: inset 0 0 6px #131313;}
-.enable-scroll .viewport { height: 127px; overflow: hidden; position: relative; width:100% }
-.enable-scroll .overview { list-style: none; position: absolute; left: 0; top: 0; padding: 0; margin: 0; width:100% }
+.enable-scroll .viewport { height: 127px; overflow: hidden; position: relative;}
+.enable-scroll .overview { list-style: none; position: absolute; left: 0; top: 0; padding: 0; margin: 0;}
 .enable-scroll .scrollbar{ position: absolute; width: 7px; right:10px;}
 .enable-scroll .track { background:url(../images/texture_2.png) repeat; height:128px !important; width:6px; position: relative; top:0; padding:2px 0; top:-2px;
 	   -moz-box-shadow: 0 1px 0 #737373, inset 0 1px 3px #131313;
@@ -423,9 +423,9 @@ ul.actions li.bubble_pointer { position:absolute; display:block; top:9px; width:
 .tools li.facebook_tool a:active span, .tools li.facebook_tool a:focus span{ background-position: -220px -64px}
 
 /*---------- Timeline Progress bar ------------*/
-.timeline-progress-bar { height:4px; width:40%; position:relative; background-color:#999; top:2px;}
+.timeline-progress-bar { height:4px; width: 0px; position:relative; background-color:#999; top:2px;}
 .timeline-progress-bar .current-line, .timeline-progress-bar .current-white { position:absolute; z-index:99999;}
-.timeline-progress-bar .current-line { background-color:#ff0000; width:2px; height:184px; right:-1px;
+.timeline-progress-bar .current-line { background-color:#ff0000; width:2px; height:146px; right:-1px;
 	   -moz-box-shadow: -3px 3px 5px #222;
 	-webkit-box-shadow: -3px 3px 5px #222;
 	     -o-box-shadow: -3px 3px 5px #222;
@@ -590,7 +590,7 @@ border-top: 1px solid #fff;	background-color:#eee;}
 /*-----Popup-----*/
 .popupDiv { height:100%; width:100%; overflow:hidden; position:absolute; z-index:9999999; display:none; top:0; left:0}
 .balck-overlay {background-color:#000; height:100%; width:100%; opacity:0.7; top:0; left:0}
-.popup-container { width:auto; height:auto; position:absolute; z-index:999; top:50%; left:50%; margin:-200px 0 0 -250px}
+.popup-container { width:auto; height:auto; position:absolute; z-index:999; top:20%; left:50%; margin:-200px 0 0 -250px}
 .popup-close-btn { position: absolute; z-index:99999; top:7px; right:7px; width:30px; height:24px; margin-right:1px;
 	background-image: -webkit-gradient(
 		linear,
@@ -604,7 +604,7 @@ border-top: 1px solid #fff;	background-color:#eee;}
 		rgb(116,35,35) 0%,
 		rgb(202,61,61) 100%
 	);}
-.popup-3 .popup-close-btn {height:30px; top:10px;right:10px;}
+.popup-3 .popup-close-btn {height:30px; top:15px;right:10px;}
 .popup-close-btn:hover {
 	background-image: -webkit-gradient(
 		linear,
@@ -668,36 +668,50 @@ border-top: 1px solid #fff;	background-color:#eee;}
 		rgb(238,238,238) 0%,
 		rgb(255,255,255) 100%
 	);}
-.pop-up .popup-content p { float:left; width:200px; position: relative; padding: 0 0 10px 0;}
-.pop-up .popup-content p label { position:absolute; left:10px; top:8px; color:#999;}
-.pop-up .popup-content p input { height:30px; border:1px solid #ccc; padding: 0 10px; line-height:30px;}
-.change-url-btn, .change-title-btn { height:30px; width:100px;}
-.popup-1 .popup-content input.change-url-btn, .popup-project-title .popup-content input.change-title-btn, { float:right;}
+
+.pop-up .popup-content form p { float:left; width:200px; position: relative; padding: 0 0 10px 0;}
+.pop-up .popup-content form p label { position:absolute; left:10px; top:8px; color:#999;}
+.pop-up .popup-content form p input { height:30px; border:1px solid #ccc; padding: 0 10px; line-height:30px;}
+.change-url-btn { height:30px; width:100px;}
+.popup-1 .popup-content input.change-url-btn { float:right;}
 .popup-1 .popup-content p input { width:200px}
-.popup-4 .popup-content { position:relative;}
-.popup-4 .popup-content .map_ {  width:250px; height:85px; background-color:#FFCC66; position:absolute; top:0; right:0;}
-.popup-4 .popup-content p { width: auto;}
-.popup-4 .popup-content p input { width:65px;}
+
 .tracks-drpdwn { position:absolute; z-index:999; left:150px; top:8px;}
 .tracks-drpdwn .dd .ddChild { top: 28px !important;}
 .tracks-drpdwn .dd .ddChild a { height:30px; line-height:30px}
-.popup-content .track-content { padding:10px; border:1px solid #ccc; background-color:#FFF;}
-.popup-1, .popup-2, .popup-4 {width:400px;
+.popup-content .track-content { padding:10px; border:1px solid #ccc; background-color:#FFF; overflow: auto; height: 150px}
+.popup-1, .popup-2, .popup-4 {width:400px; height:450px;
 	   -moz-box-shadow: 2px 2px 5px #000;
 	-webkit-box-shadow: 2px 2px 5px #000;
 	     -o-box-shadow: 2px 2px 5px #000;
 	        box-shadow: 2px 2px 5px #000;}
-.popup-1 .popup-content, .popup-2 .popup-content, .popup-4 .popup-content { padding:20px}
-.popup-1 .popup-header h3, .popup-2 .popup-header h3, .popup-4 .popup-header h3 { padding: 0 20px}
+.popup-4 {
+  background-image: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(0, rgb(238,238,238)),
+    color-stop(1, rgb(255,255,255))
+  );
+  background-image: -moz-linear-gradient(
+    center bottom,
+    rgb(238,238,238) 0%,
+    rgb(255,255,255) 100%
+  );
+}
+.popup-1 .popup-content, .popup-2 .popup-content, .popup-content { padding:20px}
+.popup-1 .popup-header h3, .popup-2 .popup-header h3, .popup-header h3 { padding: 0 20px}
 .download-btn { position: absolute; right: 0; top: 12px; color:#999; font-weight:bold; margin:0; padding:7px 0; height:auto !important;}
-.download-btn:hover { color:#fff;}
+.save-project-data-btn { position: absolute; left: 0; top: 50px; color:#999; font-weight:bold; margin:0; padding:7px 0; height:auto !important;}
+.download-btn:hover, .save-project-data-btn:hover { color:#fff;}
 .track-text {float: left; margin-top: 10px; width: 220px;}
-.download-html {float: right; height: 46px; overflow: hidden; position: relative; width: 200px;}
-.download-btn, .change-url-btn, .change-title-btn, .popup-btns input { float:left; margin-right:10px; border: 1px solid #282828 !important; padding:5px 10px; color:#CCC;
+.download-html {float: right; height: 86px; overflow: hidden; position: relative; width: 200px;}
+.download-btn, .save-project-data-btn, .change-url-btn, .change-title-btn, .popup-btns input { float:left; margin-right:10px; border: 1px solid #282828 !important; padding:5px 10px; color:#CCC;
 	   -moz-box-shadow: 0 1px 0 #fff, inset 0 1px 0 #737373;
 	-webkit-box-shadow: 0 1px 0 #fff, inset 0 1px 0 #737373;
 	     -o-box-shadow: 0 1px 0 #fff, inset 0 1px 0 #737373;
 	        box-shadow: 0 1px 0 #fff, inset 0 1px 0 #737373;}
+.save-project-data-btn { float:left; margin-left:60px; border: 1px solid #282828 !important; padding:5px 10px; color:#CCC; }
 /*----- pin -----*/
 .pin { background-color: #FFFF99; position: absolute; padding:10px 10px 10px 20px; display:inline;top:100px; left:50%; font-weight:bold;
 	   -moz-box-shadow: 0 1px 0 #666, inset 0 1px 0 #ccc;
@@ -724,7 +738,7 @@ border-top: 1px solid #fff;	background-color:#eee;}
 	-webkit-box-shadow: 0 1px 0 #3d3d3d, inset 0 1px 0 #686868;
 	     -o-box-shadow: 0 1px 0 #3d3d3d, inset 0 1px 0 #686868;
 	        box-shadow: 0 1px 0 #3d3d3d, inset 0 1px 0 #686868;}
-.header-buttons li, .popup-close-btn, .download-btn, .change-url-btn, .change-title-btn, .popup-btns input {
+.header-buttons li, .popup-close-btn, .download-btn, .save-project-data-btn, .change-url-btn, .change-title-btn, .popup-btns input {
 	background-image: -webkit-gradient(
 		linear,
 		left bottom,
@@ -737,7 +751,7 @@ border-top: 1px solid #fff;	background-color:#eee;}
 		rgb(56,56,56) 0%,
 		rgb(97,97,97) 100%
 	);}
-.header-buttons li:hover, .download-btn:hover, .change-url-btn:hover, .change-title-btn:hover, .popup-btns input:hover {
+.header-buttons li:hover, .download-btn:hover, .save-project-data-btn:hover, .change-url-btn:hover, .change-title-btn:hover, .popup-btns input:hover {
 	color: #fff;
 	background-image: -webkit-gradient(
 		linear,
@@ -751,7 +765,7 @@ border-top: 1px solid #fff;	background-color:#eee;}
 		rgb(64,64,64) 0%,
 		rgb(112,112,112) 100%
 	);}
-.header-buttons li:active, .header-buttons li:focus, .download-btn:active, .download-btn:focus, .change-url-btn:active, .change-url-btn:focus, .change-title-btn:active,  .change-title-btn:focus, .popup-btns input:focus, .popup-btns input:active {
+.header-buttons li:active, .header-buttons li:focus, .download-btn:active, .download-btn:focus, .save-project-data-btn:active, .save-project-data-btn:focus, .change-url-btn:active, .change-url-btn:focus, .change-title-btn:active,  .change-title-btn:focus, .popup-btns input:focus, .popup-btns input:active {
 	background-image: -webkit-gradient(
 		linear,
 		left bottom,
@@ -802,7 +816,7 @@ border-top: 1px solid #fff;	background-color:#eee;}
 		-webkit-border-radius: 0;
 			 -o-border-radius: 0;
 				border-radius: 0;}
-.enable-scroll.toolbox, .layer, .layer-btn, .download-btn, .change-url-btn, .change-title-btn, .popup-btns input {
+.enable-scroll.toolbox, .layer, .layer-btn, .download-btn, .save-project-data-btn, .change-url-btn, .change-title-btn, .popup-btns input {
 		   -moz-border-radius: 6px;
 		-webkit-border-radius: 6px;
 			 -o-border-radius: 6px;
