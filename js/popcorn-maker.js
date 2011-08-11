@@ -2,62 +2,72 @@
 
   window.addEventListener("DOMContentLoaded", function(){
     
-    var b  = new Butter(),
-		appController = window.appController,
-		tracks = JSON.parse(appController.tracksAsJSON()),
-		idx;
+    // purposely making b a global variable so that
+    // Popcorn Maker FCP has access to it
+    b  = new Butter();
+    var appController = window.appController,
+    tracks = JSON.parse(appController.tracksAsJSON()),
+    idx;
 
     console.log(appController.tracksAsJSON());
 
-		var targetDiv = appController.editorDOMWindow.document.createElement("div");
+    var targetDiv = appController.editorDOMWindow.document.createElement("div");
 
-		targetDiv.id = "me";
-		targetDiv.style.width = "400px";
-		targetDiv.style.height = "500px";
-		targetDiv.style.border = "1px solid black";
-		appController.editorDOMWindow.document.body.appendChild(targetDiv);
+    targetDiv.id = "me";
+    targetDiv.style.width = "400px";
+    targetDiv.style.height = "500px";
+    targetDiv.style.border = "1px solid black";
+    appController.editorDOMWindow.document.body.appendChild(targetDiv);
 
-		b.eventeditor({
-			target: targetDiv,
-			defaultEditor: "popcorn-maker/lib/defaultEditor.html",
+    b.eventeditor({
+      target: targetDiv,
+      defaultEditor: "popcorn-maker/lib/defaultEditor.html",
       /*
-			editorWidth: "98%",
-			editorHeight: "98%"
+      editorWidth: "98%",
+      editorHeight: "98%"
       */
-		});
+    });
 
-		b.previewer({
-			layout: "layouts/default.html",
+    b.previewer({
+      layout: "layouts/default.html",
       target: "main",
-			popcornURL: "lib/popcorn-complete.js",
+      popcornURL: "lib/popcorn-complete.js",
       media: appController.moviePath,
-			callback: function() {
-				b.buildPopcorn( b.getCurrentMedia(), function() {
-					for (idx = 0; idx < tracks.length; idx++) {
-						var events = tracks[idx].events;
-						var eventIdx;
+      callback: function() {
+        b.buildPopcorn( b.getCurrentMedia(), function() {
+          console.log( appController.exportedProject );
+          if ( appController.exportedProject ) {
+            console.log("IMPORTING PROJECT");
+            b.importProject( JSON.parse( appController.exportedProject ) );
+          }
+          else {
+            console.log("USE DATA FROM FCP");
+            for (idx = 0; idx < tracks.length; idx++) {
+              var events = tracks[idx].events;
+              var eventIdx;
 
-						var butterTrack = new Butter.Track();
-						b.addTrack(butterTrack);
+              var butterTrack = new Butter.Track();
+              b.addTrack(butterTrack);
 
-						for (eventIdx = 0; eventIdx < events.length; eventIdx++) {
-							var event = events[eventIdx];
+              for (eventIdx = 0; eventIdx < events.length; eventIdx++) {
+                var event = events[eventIdx];
 
-							var butterTrackEvent = new Butter.TrackEvent({
-								type: event.type,
-								popcornOptions: {
-									start: event.start,
-									end: event.end
-								}
-							});
+                var butterTrackEvent = new Butter.TrackEvent({
+                  type: event.type,
+                  popcornOptions: {
+                    start: event.start,
+                    end: event.end
+                  }
+                });
 
-							butterTrackEvent.track = butterTrack;
-							b.addTrackEvent(butterTrack, butterTrackEvent);
-						}
-					}
-				});
-			}
-		});
+                butterTrackEvent.track = butterTrack;
+                b.addTrackEvent(butterTrack, butterTrackEvent);
+              }
+            }
+          }
+        });
+      }
+    });
     
     b.plugintray({ target: "plugin-tray", pattern: '<li class="$type_tool"><a href="#" title="$type"><span></span>$type</a></li>' });
     b.addPlugin( { type: "image" } );
@@ -196,7 +206,7 @@
     },
     c = $("#contentheader");
 
-    $('a[title!=""]', c).qtip(d.links);			
+    $('a[title!=""]', c).qtip(d.links);     
 
   }, false);
 })();
