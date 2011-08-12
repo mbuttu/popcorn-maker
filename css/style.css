@@ -61,8 +61,9 @@ button {width: auto; overflow: visible;}
 
 /*------ Header -----*/
 body { background:url(../images/body-bg.jpg) repeat; font:13px/1.231 sans-serif; *font-size:small; }
-header { height:44px;
+header { height:5px;
 	padding: 0 20px;
+  /*
 	   -moz-box-shadow: 0 1px 0 #aaa;
 	-webkit-box-shadow: 0 1px 0 #aaa;
 	     -o-box-shadow: 0 1px 0 #aaa;
@@ -79,7 +80,9 @@ header { height:44px;
 		center bottom,
 		rgb(32,32,32) 0%,
 		rgb(74,74,74) 100%
-	);}
+	);
+  */
+}
 .logo { float:left; font: normal 24px/44px DroidSansBold,Helvetica, Arial, sans-serif; letter-spacing: -1px;}
 .logo a {color:#ccc;}
 .logo a:hover { color:#fff;}
@@ -261,12 +264,12 @@ padding: 0 2px;
 .timing-notches { width:100%; background:url(../images/timing-notches.png) repeat-x; height:15px}
 
 /*------- scrollbar -------*/
-.enable-scroll { min-height:128px; border:1px solid #2b2b2b; padding: 8px 30px 8px 8px; position:relative;
+.enable-scroll { min-height:159px; border:1px solid #2b2b2b; padding: 8px 30px 8px 8px; position:relative;
 	   -moz-box-shadow: inset 0 0 6px #131313;
 	-webkit-box-shadow: inset 0 0 6px #131313;
 	     -o-box-shadow: inset 0 0 6px #131313;
 	        box-shadow: inset 0 0 6px #131313;}
-.enable-scroll .viewport { height: 127px; overflow: hidden; position: relative;}
+.enable-scroll .viewport { height: 159px; overflow: hidden; position: relative;}
 .enable-scroll .overview { list-style: none; position: absolute; left: 0; top: 0; padding: 0; margin: 0;}
 .enable-scroll .scrollbar{ position: absolute; width: 7px; right:10px;}
 .enable-scroll .track { background:url(../images/texture_2.png) repeat; height:128px !important; width:6px; position: relative; top:0; padding:2px 0; top:-2px;
@@ -278,7 +281,7 @@ padding: 0 2px;
 .enable-scroll .thumb .end { background: #ccc; overflow: hidden; height: 4px; width: 4px; position:absolute; left:-1px; top:50%; margin-top:-2px; }
 .enable-scroll .disable { display: none;}
 .enable-scroll.toolbox {position: absolute;
-    right: 20px; width:120px; height:175px; border:1px solid #333; padding:0; top:67px;
+    right: 20px; width:120px; height:175px; border:1px solid #333; padding:0; top:48px;
 	background-image: -webkit-gradient(
 		linear,
 		left bottom,
@@ -426,7 +429,7 @@ ul.actions li.bubble_pointer { position:absolute; display:block; top:9px; width:
 /*---------- Timeline Progress bar ------------*/
 .timeline-progress-bar { height:4px; width: 0px; position:relative; background-color:#999; top:2px;}
 .timeline-progress-bar .current-line, .timeline-progress-bar .current-white { position:absolute; z-index:99999;}
-.timeline-progress-bar .current-line { background-color:#ff0000; width:2px; height:146px; right:-1px;
+.timeline-progress-bar .current-line { background-color:#ff0000; width:2px; height:174px; right:-1px;
 	   -moz-box-shadow: -3px 3px 5px #222;
 	-webkit-box-shadow: -3px 3px 5px #222;
 	     -o-box-shadow: -3px 3px 5px #222;

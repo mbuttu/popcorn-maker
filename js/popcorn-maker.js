@@ -384,8 +384,8 @@
     $(".hide-timeline a").toggle(function() {
 
       $(this).css('backgroundPosition','20px -10px');
-      $(".hide-timeline").animate({ bottom: '36px' }, 500);
-      $("#properties-panel").animate({ height: '38px' }, 500);
+      $(".hide-timeline").animate({ bottom: '0px' }, 500);
+      $("#properties-panel").animate({ height: '0px' }, 500);
       $(this).text("Show Timeline"); 
 
     },function() {
