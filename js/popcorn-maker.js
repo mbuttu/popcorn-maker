@@ -33,6 +33,7 @@
       layout: "layouts/default.html",
       target: "main",
       media: appController.moviePath,
+      popcornURL: "",
       callback: function() {
         b.buildPopcorn( b.getCurrentMedia(), function() {
           console.log( appController.exportedProject );
@@ -65,6 +66,11 @@
               }
             }
           }
+          var registry = b.getRegistry();
+          for( var i = 0, l = registry.length; i < l; i++ ) {
+            b.addPlugin( { type: registry[ i ].type } );
+          }
+          $('.tiny-scroll').tinyscrollbar();
         });
       }
     });
@@ -75,7 +81,7 @@
 
     //b.addCustomEditor( "external/layouts/city-slickers/editor.html", "slickers" );
 
-    //$('.enable-scroll').tinyscrollbar();
+    
     
     b.setProjectDetails("title", "Untitled Project" );
     $(".p-timeline-title").html( "Untitled Project" );
