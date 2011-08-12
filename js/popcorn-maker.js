@@ -30,7 +30,8 @@
 
     b.previewer({
       //layout: "external/layouts/city-slickers/index.html",
-      layout: "layouts/default.html",
+      //layout: "layouts/default.html",
+      layout: appController.layoutPath,
       target: "main",
       media: appController.moviePath,
       popcornURL: "",
