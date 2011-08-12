@@ -87,9 +87,9 @@
     $(".p-timeline-title").html( "Untitled Project" );
 
     b.listen( "clientdimsupdated", function( e ) {
-      $(targetDiv)
-      .css( "height", e.data.height + "px" )
-      .css("width", e.data.width + "px" );
+      $(targetDiv).
+      css( "height", e.data.height + "px" ).
+      css("width", e.data.width + "px" );
     }, "comm" );
     
     /*
@@ -275,7 +275,7 @@
       }).appendTo( projectsDrpDwn );
     });
     
-    create_msDropDown()
+    create_msDropDown();
     
     function loadProjectsFromServer(){
       //load stuff from bobby's server
@@ -307,7 +307,7 @@
           "html": projectToSave.project.title
         }).appendTo( projectsDrpDwn );
         localStorage.setItem( "PopcornMaker.SavedProjects", JSON.stringify( localProjects ) );
-        projectsDrpDwn[0].refresh()
+        projectsDrpDwn[0].refresh();
         window.alert( b.getProjectDetails( "title" ) + " was saved" );
       }
       catch ( e ) {
@@ -441,7 +441,7 @@
           my: "bottom left",
           viewport: $(window)
         }
-      },
+      }
     },
     c = $("#contentheader");
 
