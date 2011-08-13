@@ -17,7 +17,10 @@
 
       b.listen( "trackremoved", function( event ) {
 
-        event.data.getId() === currentTrack.getId() && b.closeEditTrack();
+        if ( currentTrack && event.data.getId() === currentTrack.getId() ) {
+
+          b.closeEditTrack();
+        }
       });
     //},
     //extend: {
@@ -64,21 +67,21 @@
 
         for ( var i = 0, l = trackEvents.length; i < l; i++ ) {
 
-          returnArray.push( JSON.stringify( trackEvents[ i ].popcornOptions ) );
+          returnArray.push( JSON.stringify( { type: trackEvents[ i ].type, options: trackEvents[ i ].popcornOptions } ) );
         }
 
-        return "[" + returnArray + "]";
+        return returnArray;
       };
       // clears the track of all events
       // parses data into events
       this.setTrackJSON = function( data ) {
 
-        newArray = JSON.parse( data );
+        newArray = JSON.parse( "[" + data + "]" );
         b.clearTrack();
 
         for ( var i = 0, l = newArray.length; i < l; i++ ) {
 
-          b.addTrackEvent( currentTrack, new Butter.TrackEvent({ popcornOptions: newArray[ i ], type: newArray[ i ].type }) )
+          b.addTrackEvent( currentTrack, new Butter.TrackEvent({ popcornOptions: newArray[ i ].options, type: newArray[ i ].type }) )
         }
       };
       // sets the current track's target

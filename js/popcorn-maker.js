@@ -5,6 +5,7 @@
     // purposely making b a global variable so that
     // Popcorn Maker FCP has access to it
     b  = new Butter();
+    document.getElementById( "main" ).style.height = window.innerHeight - document.getElementsByTagName( "HEADER" )[ 0 ].clientHeight - 5 + "px";
     b.comm();
     var appController = window.appController,
     tracks = JSON.parse(appController.tracksAsJSON()),
@@ -80,11 +81,10 @@
     b.plugintray({ target: "plugin-tray", pattern: '<li class="$type_tool"><a href="#" title="$type"><span></span>$type</a></li>' });
     
     b.timeline({ target: "timeline-div"});
+    b.trackeditor({ target: "popup-5"});
 
     //b.addCustomEditor( "external/layouts/city-slickers/editor.html", "slickers" );
 
-    
-    
     b.setProjectDetails("title", "Untitled Project" );
     $(".p-timeline-title").html( "Untitled Project" );
     
@@ -104,7 +104,6 @@
       $('.close-div').fadeOut('fast');
       $('.popupDiv').fadeIn('slow');
       $('#popup-4').show();
-      
       $(' .balck-overlay ').hide();
     });
     */
@@ -177,7 +176,7 @@
     scrubberContainer.addEventListener( "mousedown", function( event ) {
 
       scrubberClicked = true;
-      b.currentTimeInPixels( event.clientX - this.offsetLeft - 22 + tracksDiv.scrollLeft );
+      b.currentTimeInPixels( event.clientX - scrubberContainer.offsetLeft - 22 + tracksDiv.scrollLeft );
     }, false);
 
     document.addEventListener( "mouseup", function( event ) {
@@ -203,10 +202,12 @@
 
     b.listen( "mediatimeupdate", function() {
 
-      document.getElementById( "scrubber" ).style.left = b.currentTimeInPixels() + "px";
+      scrubber.style.left = b.currentTimeInPixels() - tracksDiv.scrollLeft + "px";
     });
 
     var trackLayers = {};
+    var editTrackTargets =  document.getElementById( "track-edit-target" );
+    var trackJSONtextArea = document.getElementById( "track-edit-JSON" );
 
     var createLayer = function( track ) {
 
@@ -234,6 +235,35 @@
         b.removeTrack( track );
       }, false );
 
+      trackJSONtextArea.addEventListener( "change", function() {
+
+        b.setTrackJSON( this.value );
+      }, false );
+
+      editButton.addEventListener( "click", function( click ) {
+
+        editTrackTargets.innerHTML = "<option value=\"\">Media Element (if applicable)</option>";
+
+        var targets = b.getTargets( true );
+
+        for ( var i = 0; i < targets.length; i++ ) {
+
+          editTrackTargets.innerHTML += "<option value=\"" + targets[ i ].name + "\">" + targets[ i ].name + "</option>";
+        }
+
+        b.openEditTrack( track );
+
+        trackJSONtextArea.value = b.getTrackJSON();
+
+        editTrackTargets.value = b.getEditTrack().target;
+
+        //$('.close-div').fadeOut('fast');
+        $('.popupDiv').fadeIn('slow');
+        $('#popup-5').show();
+        $(' .balck-overlay ').hide();
+        centerPopup( $('#popup-5') );
+      }, false );
+
       ulist.appendChild( pointerBubble );
       ulist.appendChild( editButton );
       ulist.appendChild( deleteButton );
@@ -242,6 +272,47 @@
 
       return layerDiv;
     };
+
+    var closeTrackEditor = function() {
+
+      b.closeEditTrack();
+      $('.popupDiv').fadeOut( 'slow' );
+      $('#popup-5').hide();
+      $(' .balck-overlay ').show();
+    };
+
+    var applyTrackEditor = function() {
+
+      b.setTrackTarget( editTrackTargets.value );
+    };
+
+    document.getElementById( "cancel-track-edit" ).addEventListener( "click", function( e ) {
+
+      closeTrackEditor();
+    }, false );
+
+    document.getElementById( "apply-track-edit" ).addEventListener( "click", function( e ) {
+
+      applyTrackEditor();
+    }, false );
+
+    document.getElementById( "ok-track-edit" ).addEventListener( "click", function( e ) {
+
+      applyTrackEditor();
+      closeTrackEditor();
+    }, false );
+
+    document.getElementById( "delete-track-edit" ).addEventListener( "click", function( e ) {
+
+      b.deleteTrack();
+      closeTrackEditor();
+    }, false );
+
+    document.getElementById( "clear-track-edit" ).addEventListener( "click", function( e ) {
+
+      trackJSONtextArea.value = "";
+      b.clearTrack();
+    }, false );
 
     b.listen( "trackadded", function( event ) {
 
@@ -261,11 +332,6 @@
     });
 
     function centerPopup( popup ) {
-      console.log( "( window.innerWidth / 2 ) === ",  ( window.innerWidth / 2 ) );
-      console.log( "( popup.innerWidth / 2 ) === ", ( popup[0].clientWidth / 2 ) );
-      console.log( "popup", popup );
-      console.log( "left: ", ( window.innerWidth / 2 ) - ( popup[0].clientWidth / 2 ) );
-      
       popup.css( "margin-left", ( window.innerWidth / 2 ) - ( popup[0].clientWidth / 2 ) );
     }
 
@@ -408,7 +474,7 @@
       $(".sound-btn a span").css('backgroundPosition','0 0');
     });
 
-    $('.timeline-heading .edit a').click(function(){
+    $('.timeline-title.media-title-div').click(function(){
       $('#url').val( b.getCurrentMedia().getUrl() );
       $('.close-div').fadeOut('fast');
       $('.popupDiv').fadeIn('slow');
@@ -470,9 +536,9 @@
 
     //$(function(){ $("label").inFieldLabels(); });
 
-//    $(function() {
-//      $( ".draggable" ).draggable();
-//    });
+    $(function() {
+      $( ".draggable" ).draggable();
+    });
 
     var d = {
       links: {
