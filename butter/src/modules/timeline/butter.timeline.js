@@ -233,11 +233,10 @@
       delete currentMediaInstance.trackLinerTracks[ track.getId() ];
     });
 
-
     var addTrackEvent = function( trackEvent ) {
       var trackLinerTrackEvent = currentMediaInstance.trackLinerTracks[ trackEvent.track.getId() ].createTrackEvent( "butterapp", trackEvent );
       currentMediaInstance.trackLinerTrackEvents[ trackEvent.getId() ] = trackLinerTrackEvent;
-      currentMediaInstance.butterTrackEvents[ trackLinerTrackEvent.element.id ] = trackEvent;
+      currentMediaInstance.butterTrackEvents[ trackLinerTrackEvent.element.id ]
     };
 
     this.listen( "trackeventadded", function( event ) {

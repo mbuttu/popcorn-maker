@@ -398,6 +398,10 @@
     
     });
 
+    document.getElementsByClassName( "sound-btn" )[ 0 ].addEventListener( "mousedown", function( event ) {
+      b.mute();
+    }, false);
+
     document.getElementsByClassName( "play-btn" )[ 0 ].addEventListener( "mousedown", function( event ) {
       b.isPlaying() ? b.play() : b.pause();
     }, false);
@@ -421,6 +425,7 @@
         for ( var i = 0, l = localProjects.length; i < l; i++ ) {
           if ( localProjects[ i ].project.title === projectsDrpDwn[0].value ) {
             b.clearProject();
+            b.clearPopcorn();
             b.importProject( localProjects[ i ] );
             return;
           }
