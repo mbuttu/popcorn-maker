@@ -1,10 +1,11 @@
 (function(){
 
   var layouts = [
-    "layouts/default.html",
     "layouts/default-basic.html",
+    "layouts/default.html",
     "external/layouts/city-slickers/index.html",
     "external/layouts/cgg/index.html",
+    "external/layouts/blackpanthers/default.html"
   ],
   currentLayout;
 
@@ -192,6 +193,7 @@
 
     b.addCustomEditor( "external/layouts/city-slickers/editor.html", "slickers" );
     b.addCustomEditor( "external/layouts/cgg/editor.html", "fkb" );
+    b.addCustomEditor( "external/layouts/city-slickers/editor.html", "googlestreets" );
 
     b.setProjectDetails("title", "Untitled Project" );
     $(".p-timeline-title").html( "Untitled Project" );
@@ -547,7 +549,7 @@
           "html": projectToSave.project.title
         }).appendTo( projectsDrpDwn );
         localStorage.setItem( "PopcornMaker.SavedProjects", JSON.stringify( localProjects ) );
-        projectsDrpDwn[0].refresh()
+        projectsDrpDwn[0].refresh();
         $('.close-div').fadeOut('fast');
         $('.popups').hide();
       }
@@ -746,7 +748,8 @@
             layout: currentLayout,
             target: "main",
             //media: "http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm"
-            media: appController.moviePath
+            media: appController.moviePath,
+            popcornURL: "../lib/popcorn-complete.js"
           });
           return;
         }
@@ -776,8 +779,8 @@
       b.loadPreview( {
         layout: currentLayout,
         target: "main",
-        //media: "http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm"
-        media: appController.moviePath,
+        popcornURL: "../lib/popcorn-complete.js",
+        media: document.getElementById('media-url').value
       });
       $('.close-div').fadeOut('fast');
       $('.popups').hide();
@@ -813,7 +816,8 @@
             layout: currentLayout,
             target: "main",
             //media: "http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm"
-            media: appController.moviePath
+            media: appController.moviePath,
+            popcornURL: "../lib/popcorn-complete.js"
           });
           return;
 
