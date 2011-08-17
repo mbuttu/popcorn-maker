@@ -7,6 +7,7 @@
     b  = new Butter();
     document.getElementById( "main" ).style.height = window.innerHeight - document.getElementsByTagName( "HEADER" )[ 0 ].clientHeight - 5 + "px";
     b.comm();
+
     var appController = window.appController,
     tracks = JSON.parse(appController.tracksAsJSON()),
     idx;
@@ -21,6 +22,15 @@
     //targetDiv.style.border = "none";
     appController.editorDOMWindow.document.body.appendChild(targetDiv);
 
+    b.eventeditor( { target: targetDiv, defaultEditor: "lib/popcornMakerEditor.html", editorWidth: "101%", editorHeight: "101%"  } );
+    b.previewer({
+      layout: "external/layouts/city-slickers/index.html",
+      target: "main",
+      media: appController.moviePath
+      //media: "http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm",
+    });
+
+    /*
     b.eventeditor({
       target: targetDiv,
       //defaultEditor: "popcorn-maker/lib/defaultEditor.html",
@@ -28,7 +38,9 @@
       editorWidth: "101%",
       editorHeight: "101%"
     });
+    */
 
+    /*
     b.previewer({
       //layout: "external/layouts/city-slickers/index.html",
       //layout: "layouts/default.html",
@@ -82,14 +94,26 @@
           $('.tiny-scroll').tinyscrollbar();
         });
       }
-    });
-    
+      */
+
+    b.listen( "layoutloaded", function( e ){
+      b.buildPopcorn( b.getCurrentMedia() , function() {
+
+        var registry = b.getRegistry();
+        for( var i = 0, l = registry.length; i < l; i++ ) {
+          b.addPlugin( { type: registry[ i ].type } );
+        }
+        $('.tiny-scroll').tinyscrollbar();
+      }, true );
+      b.unlisten( "layoutloaded", this );
+    } );
+
     b.plugintray({ target: "plugin-tray", pattern: '<li class="$type_tool"><a href="#" title="$type"><span></span>$type</a></li>' });
     
     b.timeline({ target: "timeline-div"});
     b.trackeditor({ target: "popup-5"});
 
-    //b.addCustomEditor( "external/layouts/city-slickers/editor.html", "slickers" );
+    b.addCustomEditor( "/Users/mbuttu/Dropbox/CDOT/ButterFCP/popcorn-maker/external/layouts/city-slickers/editor.html", "slickers" );
 
     b.setProjectDetails("title", "Untitled Project" );
     $(".p-timeline-title").html( "Untitled Project" );
@@ -431,8 +455,26 @@
         for ( var i = 0, l = localProjects.length; i < l; i++ ) {
           if ( localProjects[ i ].project.title === projectsDrpDwn[0].value ) {
             b.clearProject();
-            b.clearPopcorn();
-            b.importProject( localProjects[ i ] );
+            (function ( localProject ) {
+              b.listen( "layoutloaded", function( e ) {
+                document.getElementById( "main" ).innerHTML = "";
+                b.buildPopcorn( b.getCurrentMedia() , function() {
+
+                  var registry = b.getRegistry();
+                  for( var i = 0, l = registry.length; i < l; i++ ) {
+                    b.addPlugin( { type: registry[ i ].type } );
+                  }
+                  $('.tiny-scroll').tinyscrollbar();
+                  b.importProject( localProject );
+                }, true );
+                b.unlisten( "layoutloaded", this );
+              });
+            })( localProjects[ i ] );
+            b.loadPreview( {
+              layout: "layouts/default.html",
+              target: "main",
+              media: "http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm"
+            });
             return;
           }
         }
