@@ -20,7 +20,7 @@
       videoAspect;
 
 		function load() {
-			var link, url = 'http://api.flickr.com/services/rest/?method=flickr.photos.getInfo';
+			var link, url = 'http://api.flickr.com/services/rest/?method=flickr.photos.getSizes';
 	
 			if (options.apikey) {
 				url += "&api_key=" + options.apikey;
@@ -33,17 +33,20 @@
 			Popcorn.xhr.getJSONP( url, function( data ) {
 				var photo;
 	
-				if (!data || data.stat !== 'ok' || !data.photo) {
+				if (!data || data.stat !== 'ok') {
 					return;
 				}
 				
-				photo = data.photo;
+				photo = data.sizes.size[data.sizes.size.length - 1];
 				
 				image = document.createElement('img');
-				image.src = 'http://farm' + photo.farm + '.static.flickr.com/' + photo.server + '/' + photo.id + '_' + photo.secret + '_m.jpg';
+				//image.src = 'http://farm' + photo.farm + '.static.flickr.com/' + photo.server + '/' + photo.id + '_' + photo.secret + '_m.jpg';
+				image.src = photo.source;
 				
 				link = document.createElement('a');
 				link.setAttribute('target', '_new');
+				link.setAttribute('href', photo.url);
+				/*
 				if (photo.urls && photo.urls.url && photo.urls.url[0] &&
 					photo.urls.url[0]._content) {
 	
@@ -54,6 +57,7 @@
 					link.setAttribute('href', 'http://www.flickr.com/photos/' + (photo.owner.nsid) + '/' + photo.id + '/');
 	
 				}
+				*/
 				
 				link.addEventListener('click', function() {
 					popcorn.pause();
@@ -105,16 +109,16 @@
 		//todo: handle different formats, check for negative sizes
 		if (options.startPosition) {
 			position = {
-				top: options.startPosition[0] || 10,
-				left: options.startPosition[1] || 10,
+				left: options.startPosition[0],
+				top: options.startPosition[1],
 				width: options.startPosition[2] || 10,
 				height: options.startPosition[3] || 10
 			};
 
 			if (options.endPosition) {
 				destination = {
-					top: options.endPosition[0] || position.top,
-					left: options.endPosition[1] || position.left,
+					left: options.endPosition[0],
+					top: options.endPosition[1],
 					width: options.endPosition[2] || position.width,
 					height: options.endPosition[3] || position.height
 				};
@@ -164,6 +168,7 @@
         }
         
         container = document.createElement('div');
+        container.setAttribute('class', 'fkb');
         container.style.display = 'none';
         
         if (options.target && options.target.tagName) {
@@ -262,7 +267,13 @@
         }
       },
       _teardown: function( options ) {
-        options.target.removeChild(container);
+        if (container && container.parentNode) {
+          container.parentNode.removeChild(container);
+        }
+        options.image = null;
+        container = null;
+        image = null;
+        position = null;
       },
       manifest: {
         about:{

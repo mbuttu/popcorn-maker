@@ -25,7 +25,9 @@
     b.eventeditor( { target: targetDiv, defaultEditor: "lib/popcornMakerEditor.html", editorWidth: "101%", editorHeight: "101%"  } );
 
     b.previewer({
-      layout: "external/layouts/city-slickers/index.html",
+      layout: appController.layoutPath,
+      //layout: "external/layouts/city-slickers/index.html",
+      //layout: "/Users/mbuttu/Dropbox/CDOT/ButterFCP/popcorn-maker/external/layouts/cgg/index.html",
       target: "main",
       media: appController.moviePath,
       //media: "http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm",
@@ -117,6 +119,7 @@
 
             for (eventIdx = 0; eventIdx < events.length; eventIdx++) {
               var event = events[eventIdx];
+              console.log(event);
 
               var popcornOptions = {
                 start: event.start,
@@ -141,6 +144,13 @@
         for( var i = 0, l = registry.length; i < l; i++ ) {
           b.addPlugin( { type: registry[ i ].type } );
         }
+        if ( b.getRegistry()[0].type === "slickers" ) {
+          b.addCustomEditor( "/Users/mbuttu/Dropbox/CDOT/ButterFCP/popcorn-maker/external/layouts/city-slickers/editor.html", "slickers" );
+        }
+        else {
+          b.addCustomEditor( "/Users/mbuttu/Dropbox/CDOT/ButterFCP/popcorn-maker/external/layouts/cgg/editor.html", "fkb" );
+        }
+
         $('.tiny-scroll').tinyscrollbar();
       }, true );
       b.unlisten( "layoutloaded", this );
@@ -150,8 +160,6 @@
     
     b.timeline({ target: "timeline-div"});
     b.trackeditor({ target: "popup-5"});
-
-    b.addCustomEditor( "/Users/mbuttu/Dropbox/CDOT/ButterFCP/popcorn-maker/external/layouts/city-slickers/editor.html", "slickers" );
 
     b.setProjectDetails("title", "Untitled Project" );
     $(".p-timeline-title").html( "Untitled Project" );
