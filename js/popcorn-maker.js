@@ -100,7 +100,43 @@
 
     b.listen( "layoutloaded", function( e ){
       b.buildPopcorn( b.getCurrentMedia() , function() {
+        console.log( appController.exportedProject );
+        if ( appController.exportedProject ) {
+          console.log("IMPORTING PROJECT");
+          b.clearProject();
+          b.importProject( JSON.parse( appController.exportedProject ) );
+        }
+        else {
+          console.log("USE DATA FROM FCP");
+          for (idx = 0; idx < tracks.length; idx++) {
+            var events = tracks[idx].events;
+            var eventIdx;
 
+            var butterTrack = new Butter.Track();
+            b.addTrack(butterTrack);
+
+            for (eventIdx = 0; eventIdx < events.length; eventIdx++) {
+              var event = events[eventIdx];
+
+              var popcornOptions = {
+                start: event.start,
+                end: event.end
+              };
+
+              if ( event.text ) {
+                popcornOptions.text = event.text;
+              }
+
+              var butterTrackEvent = new Butter.TrackEvent({
+                type: event.type,
+                popcornOptions: popcornOptions
+              });
+
+              butterTrackEvent.track = butterTrack;
+              b.addTrackEvent(butterTrack, butterTrackEvent);
+            }
+          }
+        }
         var registry = b.getRegistry();
         for( var i = 0, l = registry.length; i < l; i++ ) {
           b.addPlugin( { type: registry[ i ].type } );
