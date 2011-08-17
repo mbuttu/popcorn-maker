@@ -182,13 +182,16 @@
 		</header>
 		<div style="width: 100%">
 			<div id="main-container">
-				<div id="map" style="visibility: hidden" data-butter="target"></div>
+				<div id="map" data-butter="target"></div>
 				<div id="video-container" style="visibility: visible">
 					<video id="video" data-butter="media" class="unshoop">
-						<source src="http://video-js.zencoder.com/oceans-clip.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"' />
+						<source src="http://videos-origin.mozilla.org/serv/webmademovies/bavc/cityslickers.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"' />
+						<source src="http://videos-origin.mozilla.org/serv/webmademovies/bavc/cityslickers.webm" type='video/webm; codecs="vp8, vorbis"' />
+						<!--
 						<source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm; codecs="vp8, vorbis"' />
 						
 						<source src="http://video-js.zencoder.com/oceans-clip.ogv" type='video/ogg; codecs="theora, vorbis"' />
+						-->
 					</video>
 				</div>
 				<div id="controls">
@@ -212,6 +215,7 @@
 			progressOuter,
 			playButton,
 			map,
+			center,
 			playMarker,
 			video,
 			videoContainer,
@@ -239,10 +243,17 @@
 		
 		function setUpMap() {
 			map.setOptions({
-				draggable: false
+				draggable: false,
+				mapTypeControl: false,
+				panControl: false,
+				scaleControl: false,
+				zoomControl: false,
+				streetViewControl: false,
+				disableDoubleClickZoom: true,
+				scrollwheel: false
 			});
 			
-			var center = new google.maps.LatLng(37.81250111667474, -122.28639156254883);
+			center = new google.maps.LatLng(37.8169812, -122.28960699999999);
 			
 			playMarker = new google.maps.Marker({
 				map: map,
@@ -279,7 +290,7 @@
 				}
 			});
 
-			if (video.readyState >= 3) {
+			if (false && video.readyState >= 3) {
 				setTimeout(function() {
 					document.getElementById('map').style.visibility = '';
 //					videoContainer.style.opacity = 0.5;
@@ -291,6 +302,13 @@
 
 		function doFadeyThing() {
 			var i, recent = -5;
+			
+			if (activeEvents.length) {
+				videoContainer.style.opacity = 0.1;
+			} else {
+				videoContainer.style.opacity = 1;
+			}
+			return;
 			
 			for (i = 0; i < activeEvents.length; i++) {
 				recent = Math.max(activeEvents[i].start, recent);
@@ -311,11 +329,21 @@
 			}
 			options.marker.setDraggable(false);
 			options.marker.setClickable(false);
+			
+			var bounds = map.getBounds() || options.mapBounds;
+			bounds = new google.maps.LatLngBounds(bounds.getSouthWest(), bounds.getNorthEast());
+			if (bounds) {
+				bounds.extend(center);	
+				map.fitBounds(bounds);
+			} else {
+				//map.setCenter(center);
+			}
 		}
 		
 		window.markerStart = function (options) {
 			activeEvents.push(options);
-			activeEvents[0].onFrame = doFadeyThing;
+			//activeEvents[0].onFrame = doFadeyThing;
+			doFadeyThing();
 		}
 
 		window.markerEnd = function (options) {
@@ -323,6 +351,8 @@
 			if (index >= 0) {
 				activeEvents.splice(index, 1);
 			}
+			doFadeyThing();
+			return;
 			
 			options.onFrame = null;
 			
@@ -378,6 +408,16 @@
 					videoHover = false;
 				}
 
+			}, false);
+			
+			window.addEventListener('mouseout', function (e) {
+				video.removeAttribute('class');
+				videoHover = false;
+			}, false);
+			
+			window.addEventListener('blur', function (e) {
+				video.removeAttribute('class');
+				videoHover = false;
 			}, false);
 			
 			video.addEventListener('timeupdate', function() {

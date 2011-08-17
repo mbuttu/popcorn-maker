@@ -156,6 +156,11 @@
 
     }; // scraper
 
+    this.popcornFlag = function() {
+      var win = iframe.contentWindow || iframe.contentDocument;
+      return !!( win.Popcorn && win.Butter );
+    };
+
     // buildPopcorn function, builds an instance of popcorn in the iframe and also
     // a local version of popcorn
     this.buildPopcorn = function( media, callback, layoutPopcorn ) {
@@ -519,7 +524,7 @@
             commServer.send( "previewerCommClient", "ping", "ping" );
           } else {
 
-            if ( !win.Popcorn.instances[ 0 ] ) {
+            if ( win.Popcorn.instances.length === 0 ) {
               popcornScript = doc.createElement( "script" );
               popcornScript.innerHTML = popcornString;
               doc.head.appendChild( popcornScript );

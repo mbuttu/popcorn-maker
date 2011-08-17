@@ -1,7 +1,34 @@
 (function(){
 
-  window.addEventListener("DOMContentLoaded", function(){
-    
+  var layouts = [
+    "layouts/default.html",
+    "layouts/default-basic.html",
+    "external/layouts/city-slickers/index.html",
+    "external/layouts/cgg/index.html",
+  ],
+  currentLayout;
+
+  window.addEventListener("DOMContentLoaded", function() {
+
+    function toggleLoadingScreen ( state ) {
+      if ( state ) {
+        $('#loading-overlay').show();
+      }
+      else {
+        $('#loading-overlay').hide();
+      }
+    }
+
+    var layoutSelect = document.getElementById('layout-select');
+    for ( var i=0; i<layouts.length; ++i ) {
+      var option = document.createElement( 'option' );
+      option.value = layouts[ i ];
+      option.innerHTML = layouts[ i ];
+      layoutSelect.appendChild( option );
+    }
+
+    currentLayout = layouts[ 3 ];
+
     // purposely making b a global variable so that
     // Popcorn Maker FCP has access to it
     b  = new Butter();
@@ -25,7 +52,8 @@
     b.eventeditor( { target: targetDiv, defaultEditor: "lib/popcornMakerEditor.html", editorWidth: "101%", editorHeight: "101%"  } );
 
     b.previewer({
-      layout: appController.layoutPath,
+      layout: currentLayout,
+      //layout: appController.layoutPath,
       //layout: "external/layouts/city-slickers/index.html",
       //layout: "/Users/mbuttu/Dropbox/CDOT/ButterFCP/popcorn-maker/external/layouts/cgg/index.html",
       target: "main",
@@ -152,7 +180,8 @@
         }
 
         $('.tiny-scroll').tinyscrollbar();
-      }, true );
+        toggleLoadingScreen( false );
+      }, b.popcornFlag());
       b.unlisten( "layoutloaded", this );
     } );
 
@@ -160,6 +189,9 @@
     
     b.timeline({ target: "timeline-div"});
     b.trackeditor({ target: "popup-5"});
+
+    b.addCustomEditor( "external/layouts/city-slickers/editor.html", "slickers" );
+    b.addCustomEditor( "external/layouts/cgg/editor.html", "fkb" );
 
     b.setProjectDetails("title", "Untitled Project" );
     $(".p-timeline-title").html( "Untitled Project" );
@@ -484,7 +516,7 @@
     
 //    function loadProjectsFromServer(){
 //      //load stuff from bobby's server
-//    }
+//     }
 //    
 //    loadProjectsFromServer();
     
@@ -494,8 +526,10 @@
       
       try {
         var projectToSave = b.exportProject(),
-        overwrite = false,
+        overwrite = false,  
         title;
+
+        projectToSave.layout = currentLayout;
         
         localProjects = localStorage.getItem( "PopcornMaker.SavedProjects" );
         
@@ -689,6 +723,8 @@
         
         if ( localProjects && localProjects[ title ] ) {
           b.clearProject();         
+          b.clearPlugins();
+          currentLayout = localProjects[ title ].layout;
           (function ( localProject ) {
             b.listen( "layoutloaded", function( e ) {
               document.getElementById( "main" ).innerHTML = "";
@@ -700,14 +736,17 @@
                 }
                 $('.tiny-scroll').tinyscrollbar();
                 b.importProject( localProject );
+                toggleLoadingScreen( false );
               }, true );
               b.unlisten( "layoutloaded", this );
             });
           })( localProjects[ title ] );
+          toggleLoadingScreen( true );
           b.loadPreview( {
-            layout: "layouts/default.html",
+            layout: currentLayout,
             target: "main",
-            media: "http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm"
+            //media: "http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm"
+            media: appController.moviePath
           });
           return;
         }
@@ -717,8 +756,31 @@
     
     $(".create-new-btn").click(function() {
       b.clearProject();
-      b.clearPopcorn();
+      b.clearPlugins();
       b.setProjectDetails( "title", "Untitled Project");
+      currentLayout = document.getElementById( 'layout-select' ).value;
+      b.listen( "layoutloaded", function( e ) {
+        b.buildPopcorn( b.getCurrentMedia() , function() {
+
+          var registry = b.getRegistry();
+          for( var i = 0, l = registry.length; i < l; i++ ) {
+            b.addPlugin( { type: registry[ i ].type } );
+          }
+          $('.tiny-scroll').tinyscrollbar();
+          toggleLoadingScreen( false );
+        }, b.popcornFlag() );
+        b.unlisten( "layoutloaded", this );
+      });
+
+      toggleLoadingScreen( true );
+      b.loadPreview( {
+        layout: currentLayout,
+        target: "main",
+        //media: "http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm"
+        media: appController.moviePath,
+      });
+      $('.close-div').fadeOut('fast');
+      $('.popups').hide();
     });
     
     $(".load-code-btn").click(function() {
@@ -727,11 +789,34 @@
       
         try {
           var data = JSON.parse( dataString );
-          b.clearProject();
-          b.clearPopcorn();
-          b.importProject( data );
+          b.clearProject();         
+          b.clearPlugins();
+          currentLayout = data.layout ? data.layout : layouts[ 0 ];
+          (function ( data ) {
+            b.listen( "layoutloaded", function( e ) {
+              document.getElementById( "main" ).innerHTML = "";
+              b.buildPopcorn( b.getCurrentMedia() , function() {
+
+                var registry = b.getRegistry();
+                for( var i = 0, l = registry.length; i < l; i++ ) {
+                  b.addPlugin( { type: registry[ i ].type } );
+                }
+                $('.tiny-scroll').tinyscrollbar();
+                b.importProject( data );
+              }, b.popcornFlag() );
+              b.unlisten( "layoutloaded", this );
+            });
+          })( data );
           $('.close-div').fadeOut('fast');
           $('.popups').hide();
+          b.loadPreview( {
+            layout: currentLayout,
+            target: "main",
+            //media: "http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm"
+            media: appController.moviePath
+          });
+          return;
+
         }
         catch ( e ) {
           console.log ( "Error Loading in Data", e );
@@ -740,7 +825,9 @@
     });
     
     $(".show-json-btn").click(function() {
-      $('.track-content').html( JSON.stringify( b.exportProject() ) );
+      var exp = b.exportProject();
+      exp.layout = currentLayout;
+      $('.track-content').html( JSON.stringify( exp ) );
     });
 
     $(".show-html-btn").click(function() {
@@ -764,6 +851,18 @@
     c = $("#contentheader");
 
     $('a[title!=""]', c).qtip(d.links);
+
+    $(window).bind("beforeunload", function( event ) {
+      return "Are you sure you want to leave Popcorn Maker?";
+    });
+
+    $(window).keypress( function( event ) {
+      var elem = event.srcElement || event.target;
+      if ( (event.which === 46 || event.which === 8) &&
+           (elem.nodeName !== "INPUT" && elem.nodeName !== "TEXTAREA") ) {
+        event.preventDefault();
+      }
+    });
 
   }, false);
 })();

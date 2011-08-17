@@ -60,9 +60,9 @@
 		<div id="container" style="display: none" data-butter="target" class="video-js-box">
 				<video id="video" preload="auto" autobuffer controls data-butter="media" class="video-js">
 				<!-- poster="http://videos.mozilla.org/serv/webmademovies/popcornposter.png" -->
-					<source src="http://videos.mozilla.org/serv/webmademovies/wtfpopcorn.mp4" type="video/mp4">
-					<source src="http://videos.mozilla.org/serv/webmademovies/wtfpopcorn.webm" type="video/webM">
-					<source src="http://videos.mozilla.org/serv/webmademovies/wtfpopcorn.ogv" type="video/ogg">
+					<source src="http://videos-origin.mozilla.org/serv/webmademovies/bavc/creativegrowth.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"' />
+					<source src="http://videos-origin.mozilla.org/serv/webmademovies/bavc/creativegrowth.webm" type='video/webm; codecs="vp8, vorbis"' />
+<!--					<source src="http://videos.mozilla.org/serv/webmademovies/wtfpopcorn.ogv" type="video/ogg"> -->
 				</video>
 		</div>
 		<div id="form">
@@ -104,6 +104,14 @@
 		var optionsCount = 0;
 		var videoAspect = 16/9;
 		var videoSetup = false;
+		
+		document.getElementById('video').addEventListener('play', function() {
+			if (!videoSetup) {
+				videoSetup = true;
+				container.style.display = '';
+				VideoJS.setupAllWhenReady();
+			}
+		}, false);
 		
 		function loadEvent(butterId, options) {
 			deleteEvent(butterId);
@@ -351,7 +359,7 @@
 		
 		doSearch();
 
-		document.getElementById('go').addEventListener('click', doSearch, false);		
+		document.getElementById('go').addEventListener('click', doSearch, false);
 	}());
 	
 	</script>
