@@ -131,7 +131,7 @@
       $('#butter-editor-iframe')
       .css("height", e.data.height + "px")
       .css("width", e.data.width + "px" );
-      centerPopup( popup4 );
+      //centerPopup( popup4 );
       popup4.css("visibility", "visible");
     });
     
