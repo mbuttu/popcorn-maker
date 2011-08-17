@@ -18,7 +18,7 @@
     targetDiv.id = "me";
     targetDiv.style.width = "100%";
     targetDiv.style.height = "100%";
-    targetDiv.style.border = "1px solid black";
+    //targetDiv.style.border = "none";
     appController.editorDOMWindow.document.body.appendChild(targetDiv);
 
     b.eventeditor({
@@ -56,12 +56,18 @@
               for (eventIdx = 0; eventIdx < events.length; eventIdx++) {
                 var event = events[eventIdx];
 
+                var popcornOptions = {
+                  start: event.start,
+                  end: event.end
+                };
+
+                if ( event.text ) {
+                  popcornOptions.text = event.text;
+                }
+
                 var butterTrackEvent = new Butter.TrackEvent({
                   type: event.type,
-                  popcornOptions: {
-                    start: event.start,
-                    end: event.end
-                  }
+                  popcornOptions: popcornOptions
                 });
 
                 butterTrackEvent.track = butterTrack;
