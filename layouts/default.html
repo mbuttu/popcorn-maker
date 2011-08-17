@@ -1,9 +1,6 @@
 <html>
 <head>
-<<<<<<< HEAD
-  <script src="../lib/popcorn-complete.js"></script>
-=======
-<script src="http://popcornjs.org/code/dist/popcorn-complete.js"></script>
+<script src="../lib/popcorn-complete.js"></script>
 <script src="../lib/butter.js"></script>
 <script>
   document.addEventListener( "DOMContentLoaded", function(){
@@ -17,7 +14,6 @@
       commClient.send( Popcorn.instances.indexOf( popcorn ), "pong" );
     });
     commClient.listen( "trackeventadded", function ( message ) {
-      console.log('trackeventadded!!!!!!', message);
       var butterId = message.id;
       popcorn[ message.type ]( Popcorn.extend( {}, message.popcornOptions ) ); 
       var popcornEventId = popcorn.getLastTrackEventId();
@@ -29,19 +25,16 @@
           popcorn[ message.type ]( Popcorn.extend( {}, message.popcornOptions ) );
           popcornEventId = popcorn.getLastTrackEventId();
         }
-        console.log('trackeventupdated', message);
       });
       commClient.listen( "trackeventremoved", function ( message ) {
         if ( message.id === butterId ) {
           popcorn.removeTrackEvent( popcornEventId );
         }
-        console.log('trackeventremoved', message);
       });
     });
     
   }, false );
 </script>
->>>>>>> 1da8819c6fc3d4eae7ce3e48b1002a03874a8968
 </head>
 <body>
   <div id="div1">

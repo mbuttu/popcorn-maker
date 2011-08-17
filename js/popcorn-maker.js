@@ -23,11 +23,13 @@
     appController.editorDOMWindow.document.body.appendChild(targetDiv);
 
     b.eventeditor( { target: targetDiv, defaultEditor: "lib/popcornMakerEditor.html", editorWidth: "101%", editorHeight: "101%"  } );
+
     b.previewer({
       layout: "external/layouts/city-slickers/index.html",
       target: "main",
-      media: appController.moviePath
+      media: appController.moviePath,
       //media: "http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm",
+      popcornURL: "../lib/popcorn-complete.js"
     });
 
     /*
@@ -123,24 +125,31 @@
     });
 
     b.listen( "clientdimsupdated", function( e ) {
-      $(targetDiv).
-      css( "height", e.data.height + "px" ).
-      css("width", e.data.width + "px" );
-    }, "comm" );
+      var popup4 = $(targetDiv);
+      popup4.css( "height", e.data.height + "px" )
+      .css("width", e.data.width + "px" );
+      $('#butter-editor-iframe')
+      .css("height", e.data.height + "px")
+      .css("width", e.data.width + "px" );
+      centerPopup( popup4 );
+      popup4.css("visibility", "visible");
+    });
     
     /*
     b.listen ( "trackeditstarted", function() {
-      
       $('.close-div').fadeOut('fast');
       $('.popupDiv').fadeIn('slow');
-      $('#popup-4').show();
+      $('.popup-4').show();
       $(' .balck-overlay ').hide();
+      
     });
     */
     
     b.listen ( "trackeditclosed", function() {
       $('.close-div').fadeOut('fast');
-      $('.popups').hide(); 
+      $('.popupDiv').hide();
+      $('popup-4').css("visibility", "hidden")
+      .css( "display", "" );
     });
 
     var scrubber = document.getElementById( "scrubber" );
@@ -149,6 +158,7 @@
     var tracksDiv = document.getElementById( "tracks-div" );
     var progressBar = document.getElementById( "progress-bar" );
     var timelineDuration = document.getElementById( "timeline-duration" );
+    var timelineTarget = document.getElementById( "timeline-div" );
 
     function checkScrubber( event ) {
 
@@ -166,6 +176,7 @@
       if ( scrubberLeft > scrubberContainer.offsetWidth ) {
 
         progressBar.style.width = "100%";
+
         scrubber.style.left = scrubberContainer.offsetWidth + "px";
       }
 
@@ -188,9 +199,31 @@
       }
     });
 
-    document.getElementById( "tracks-div" ).addEventListener( "scroll", function( event ) {
+    var zoom = function( event ) {
 
-      scrubberLeft = checkScrubber( event );
+      if ( event.shiftKey ) {
+
+        event.preventDefault();
+        b.zoom( event.detail || event.wheelDelta );
+      }
+
+      var scrubberLeft = checkScrubber( event );
+
+      if ( scrubberLeft - 5 > scrubberContainer.offsetWidth || scrubberLeft < 0 ) {
+
+        scrubber.style.display = "none";
+      } else {
+
+        scrubber.style.display = "block";
+      }
+    };
+
+    tracksDiv.addEventListener( "DOMMouseScroll", zoom, false );
+    tracksDiv.addEventListener( "mousewheel", zoom, false );
+
+    tracksDiv.addEventListener( "scroll", function( event ) {
+
+      var scrubberLeft = checkScrubber( event );
 
       if ( scrubberLeft - 5 > scrubberContainer.offsetWidth || scrubberLeft < 0 ) {
 
@@ -220,12 +253,15 @@
 
         var scrubberPos = event.pageX - scrubberContainer.offsetLeft - 22 + tracksDiv.scrollLeft;
 
-        if ( scrubberPos >= 0 ) {
+        if ( scrubberPos <= 0 ) {
 
-          b.currentTimeInPixels( scrubberPos );
+          b.currentTimeInPixels( 0 );
+        } else if ( scrubberPos >= timelineTarget.offsetWidth ) {
+
+          b.currentTimeInPixels( timelineTarget.offsetWidth );
         } else {
 
-          b.currentTime( 0 );
+          b.currentTimeInPixels( scrubberPos );
         }
       }
     }, false);
@@ -361,6 +397,14 @@
       layersDiv.insertBefore( trackLayers[ "layer-" + event.data.getId() ], layersDiv.children[ event.data.newPos ] );
     });
 
+    document.addEventListener( "keypress", function( event ) {
+
+      if ( event.charCode === 32 ) {
+
+        b.isPlaying() ? b.play() : b.pause();
+      }
+    }, false );
+
     function centerPopup( popup ) {
       popup.css( "margin-left", ( window.innerWidth / 2 ) - ( popup[0].clientWidth / 2 ) );
     }
@@ -379,7 +423,12 @@
     localProjects = localStorage.getItem( "PopcornMaker.SavedProjects" );
     
     localProjects = localProjects ? JSON.parse( localProjects ) : localProjects;
-
+    
+    $( "<option/>", {
+        "value": undefined,
+        "html": "[select a project]"
+      }).appendTo( projectsDrpDwn );
+    
     localProjects && $.each( localProjects, function( index, oneProject ) {
       $( "<option/>", {
         "value": oneProject.project.title,
@@ -389,38 +438,40 @@
     
     create_msDropDown();
     
-    function loadProjectsFromServer(){
-      //load stuff from bobby's server
-    }
-    
-    loadProjectsFromServer();
+//    function loadProjectsFromServer(){
+//      //load stuff from bobby's server
+//    }
+//    
+//    loadProjectsFromServer();
     
     // Saving
 
     $(".save-project-data-btn").click(function(){
       
       try {
-        var localProjects = localStorage.getItem( "PopcornMaker.SavedProjects" ),
-        projectToSave = b.exportProject(),
+        var projectToSave = b.exportProject(),
         overwrite = false,
-        projectsDrpDwn = $( ".projects-dd" ) ;
+        title;
         
-        localProjects = localProjects ? JSON.parse( localProjects ) : [];
+        localProjects = localStorage.getItem( "PopcornMaker.SavedProjects" );
         
-        for ( var i = 0, l = localProjects.length; i < l; i++ ) {
-          if ( localProjects[ i ].project.title === projectToSave.project.title ) {
-            localProjects[ i ] = projectToSave;
-            overwrite = true;
-          }
-        }
-        !overwrite && localProjects.push( projectToSave ) && 
+        title = projectToSave.project.title = $('.project-title-textbox').val() || projectToSave.project.title;
+        
+        localProjects = localProjects ? JSON.parse( localProjects ) : {};
+        
+        overwrite = localProjects[ title ] ? true : false;
+        
+        localProjects[ title ] = projectToSave;
+
+        !overwrite &&
         $( "<option/>", {
           "value": projectToSave.project.title,
           "html": projectToSave.project.title
         }).appendTo( projectsDrpDwn );
         localStorage.setItem( "PopcornMaker.SavedProjects", JSON.stringify( localProjects ) );
-        projectsDrpDwn[0].refresh();
-        window.alert( b.getProjectDetails( "title" ) + " was saved" );
+        projectsDrpDwn[0].refresh()
+        $('.close-div').fadeOut('fast');
+        $('.popups').hide();
       }
       catch ( e ) {
         throw new Error("Saving Failed...");
@@ -443,45 +494,14 @@
     b.listen( "mediapaused", function( event ) {
       document.getElementsByClassName( "play-btn" )[ 0 ].children[ 0 ].children[ 0 ].style.backgroundPosition = "0pt 0px";
     } );
-
-    $( ".edit-selected-project" ).click( function() {
-      var localProjects = localStorage.getItem( "PopcornMaker.SavedProjects" ),
-      projectsDrpDwn = $( ".projects-dd" );
-
-      if ( projectsDrpDwn[0].selectedIndex > -1 ) {
-
-        localProjects = localProjects ? JSON.parse( localProjects ) : [];
-        
-        for ( var i = 0, l = localProjects.length; i < l; i++ ) {
-          if ( localProjects[ i ].project.title === projectsDrpDwn[0].value ) {
-            b.clearProject();
-            (function ( localProject ) {
-              b.listen( "layoutloaded", function( e ) {
-                document.getElementById( "main" ).innerHTML = "";
-                b.buildPopcorn( b.getCurrentMedia() , function() {
-
-                  var registry = b.getRegistry();
-                  for( var i = 0, l = registry.length; i < l; i++ ) {
-                    b.addPlugin( { type: registry[ i ].type } );
-                  }
-                  $('.tiny-scroll').tinyscrollbar();
-                  b.importProject( localProject );
-                }, true );
-                b.unlisten( "layoutloaded", this );
-              });
-            })( localProjects[ i ] );
-            b.loadPreview( {
-              layout: "layouts/default.html",
-              target: "main",
-              media: "http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm"
-            });
-            return;
-          }
-        }
-      }
+    
+    $('.add-project-btn').click(function() {
+      $('.close-div').fadeOut('fast');
+      $('.popupDiv').fadeIn('slow');
+      $('#popup-add-project').show();
+      centerPopup( $('#popup-add-project') );
+      $(' .balck-overlay ').show();
     });
-
-    //$('.enable-scroll').tinyscrollbar();
 
     $(".collapse-btn").toggle(function() {
 
@@ -554,6 +574,7 @@
     $('.p-3').click(function(){
       
       $('.track-content').html( $('<div/>').text( b.getHTML() ).html() );
+      $('.project-title-textbox').val( b.getProjectDetails( "title" ) );
       
       $('.close-div').fadeOut('fast');
       $('.popupDiv').fadeIn('slow');
@@ -562,21 +583,46 @@
       $(' .balck-overlay ').show();
     });
     
-    $('.p-timeline-title').click(function(){
-      $('#project-title').val( b.getProjectDetails( "title" ) );
+    $('.edit-selected-project').click(function(){
+      if ( projectsDrpDwn[0].selectedIndex > 0 ) {
+        $('#project-title').val( $( ".projects-dd" ).val() );
 
-      $('.close-div').fadeOut('fast');
-      $('.popupDiv').fadeIn('slow');
-      $('#popup-project-title').show();
-      centerPopup( $('#popup-project-title') );
-      $('.balck-overlay').hide();
+        $('.close-div').fadeOut('fast');
+        $('.popupDiv').fadeIn('slow');
+        $('#popup-project-title').show();
+        centerPopup( $('#popup-project-title') );
+        $('.balck-overlay').hide();
+      }
     });
     
     $(".change-title-btn").click( function() {
-      var title = $('#project-title').val();
-      if ( title.length > 0) {
-        b.setProjectDetails("title", title);
-        $(".p-timeline-title").html( title );
+      var newTitle = $('#project-title').val(),
+        oldTitle = $( ".projects-dd" ).val(),
+        idx = projectsDrpDwn[0].selectedIndex,
+        selectedOpt,
+        targetProject;
+
+      if ( newTitle.length > 0) {
+        localProjects = localStorage.getItem( "PopcornMaker.SavedProjects" );
+    
+        localProjects = localProjects ? JSON.parse( localProjects ) : localProjects;
+        
+        ( b.getProjectDetails ( "title" ) === newTitle ) && b.setProjectDetails ( "title", newTitle );
+        
+        selectedOpt = projectsDrpDwn[0].options[ idx ];
+        
+        selectedOpt.value = newTitle;
+        selectedOpt.innerHTML = newTitle;
+        projectsDrpDwn[0].refresh();
+        
+        if ( localProjects[ oldTitle ] ) {
+          targetProject = localProjects[ oldTitle ];
+          delete localProjects[ oldTitle ];
+          targetProject.project.title = newTitle;
+          localProjects[ newTitle ] = targetProject;
+          localStorage.setItem( "PopcornMaker.SavedProjects", JSON.stringify( localProjects ) );
+        }
+        
         $('.close-div').fadeOut('fast');
         $('.popups').hide();
       }
@@ -586,7 +632,76 @@
       $('.close-div').fadeOut('fast');
       $('.popups').hide();
     });
+    
+    $(".projects-dd").change(function() {
+    
+      var title;
+      localProjects = localStorage.getItem( "PopcornMaker.SavedProjects" );
+      
+      if ( projectsDrpDwn[0].selectedIndex > 0 ) {
 
+        localProjects = localProjects ? JSON.parse( localProjects ) : undefined;
+        title = projectsDrpDwn.val();
+        
+        if ( localProjects && localProjects[ title ] ) {
+          b.clearProject();         
+          (function ( localProject ) {
+            b.listen( "layoutloaded", function( e ) {
+              document.getElementById( "main" ).innerHTML = "";
+              b.buildPopcorn( b.getCurrentMedia() , function() {
+
+                var registry = b.getRegistry();
+                for( var i = 0, l = registry.length; i < l; i++ ) {
+                  b.addPlugin( { type: registry[ i ].type } );
+                }
+                $('.tiny-scroll').tinyscrollbar();
+                b.importProject( localProject );
+              }, true );
+              b.unlisten( "layoutloaded", this );
+            });
+          })( localProjects[ title ] );
+          b.loadPreview( {
+            layout: "layouts/default.html",
+            target: "main",
+            media: "http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm"
+          });
+          return;
+        }
+        
+      }
+    });
+    
+    $(".create-new-btn").click(function() {
+      b.clearProject();
+      b.clearPopcorn();
+      b.setProjectDetails( "title", "Untitled Project");
+    });
+    
+    $(".load-code-btn").click(function() {
+      var dataString = $(".project-json").val();
+      if ( dataString ) {
+      
+        try {
+          var data = JSON.parse( dataString );
+          b.clearProject();
+          b.clearPopcorn();
+          b.importProject( data );
+          $('.close-div').fadeOut('fast');
+          $('.popups').hide();
+        }
+        catch ( e ) {
+          console.log ( "Error Loading in Data", e );
+        }
+      }
+    });
+    
+    $(".show-json-btn").click(function() {
+      $('.track-content').html( JSON.stringify( b.exportProject() ) );
+    });
+
+    $(".show-html-btn").click(function() {
+      $('.track-content').html( $('<div/>').text( b.getHTML() ).html() );
+    });
     //$(function(){ $("label").inFieldLabels(); });
 
     $(function() {
