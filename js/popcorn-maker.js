@@ -173,12 +173,14 @@
         for( var i = 0, l = registry.length; i < l; i++ ) {
           b.addPlugin( { type: registry[ i ].type } );
         }
+        /*
         if ( b.getRegistry()[0].type === "slickers" ) {
           b.addCustomEditor( "/Users/mbuttu/Dropbox/CDOT/ButterFCP/popcorn-maker/external/layouts/city-slickers/editor.html", "slickers" );
         }
         else {
           b.addCustomEditor( "/Users/mbuttu/Dropbox/CDOT/ButterFCP/popcorn-maker/external/layouts/cgg/editor.html", "fkb" );
         }
+        */
 
         $('.tiny-scroll').tinyscrollbar();
         toggleLoadingScreen( false );
@@ -191,9 +193,9 @@
     b.timeline({ target: "timeline-div"});
     b.trackeditor({ target: "popup-5"});
 
-    b.addCustomEditor( "external/layouts/city-slickers/editor.html", "slickers" );
-    b.addCustomEditor( "external/layouts/cgg/editor.html", "fkb" );
-    b.addCustomEditor( "external/layouts/city-slickers/editor.html", "googlestreets" );
+    b.addCustomEditor( "popcorn-maker/external/layouts/city-slickers/editor.html", "slickers" );
+    b.addCustomEditor( "popcorn-maker/external/layouts/cgg/editor.html", "fkb" );
+    b.addCustomEditor( "popcorn-maker/external/layouts/city-slickers/editor.html", "googlestreets" );
 
     b.setProjectDetails("title", "Untitled Project" );
     $(".p-timeline-title").html( "Untitled Project" );
