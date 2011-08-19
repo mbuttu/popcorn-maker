@@ -716,16 +716,13 @@
 				var b = new Butter();
 				b.comm();
 	
-				var commClient = new b.CommClient( "previewerClient", function ( message ) {
-					console.log('in preview', message);
-				} );
+				var commClient = new b.CommClient( "previewerClient"  );
 	
 				commClient.listen( "ping", function( message ) {
 					commClient.send( Popcorn.instances.indexOf( popcorn ), "pong" );
 				});
 	
 				commClient.listen( "trackeventadded", function ( message ) {
-					console.log('trackeventadded!!!!!!', message);
 				
 					var butterId = message.id;
 					
@@ -763,11 +760,6 @@
 						popcornEventId = popcorn.getLastTrackEventId();
 
 						butterTracks[butterId] = popcornEventId;
-
-						//todo: remove/destroy/rebuild any "end" DOM nodes/events
-						allEvents[butterId] = options;
-
-						console.log('trackeventupdated', message);
 					}
 				});
 			
@@ -779,11 +771,6 @@
 						popcorn.removeTrackEvent( popcornEventId );
 						
 						delete butterTracks[butterId];
-						
-						//todo: remove/destroy any "end" DOM nodes/events
-						delete allEvents[butterId];
-						
-						console.log('trackeventremoved', message);
 					}
 				});
 
