@@ -760,11 +760,6 @@
 						popcornEventId = popcorn.getLastTrackEventId();
 
 						butterTracks[butterId] = popcornEventId;
-
-						//todo: remove/destroy/rebuild any "end" DOM nodes/events
-						allEvents[butterId] = options;
-
-						console.log('trackeventupdated', message);
 					}
 				});
 			
@@ -776,11 +771,6 @@
 						popcorn.removeTrackEvent( popcornEventId );
 						
 						delete butterTracks[butterId];
-						
-						//todo: remove/destroy any "end" DOM nodes/events
-						delete allEvents[butterId];
-						
-						console.log('trackeventremoved', message);
 					}
 				});
 
