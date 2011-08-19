@@ -134,7 +134,7 @@
         console.log( appController.exportedProject );
         if ( appController.exportedProject ) {
           console.log("IMPORTING PROJECT");
-          b.clearProject();
+          //b.clearProject();
           b.importProject( JSON.parse( appController.exportedProject ) );
         }
         else {
