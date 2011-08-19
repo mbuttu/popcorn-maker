@@ -239,25 +239,6 @@
 				}
 			}
 			
-			return;
-
-			for (i = 0; i < 10 && i < flickrData.length && time < p.duration(); i++) {
-/*
-				p.fkb({
-					start: time,
-					end: time + 2 + Math.random() * 2,
-					id: flickrData[0].id,
-					apikey: apikey,
-					target: 'container',
-					startPosition: [0, 0, 100, 100],
-					endPosition: [-10, -10, 120, 120],
-					onLoad: 'imageLoaded'
-				});
-*/
-				flickrData.shift();
-				toLoad++;
-				time += 6;
-			}
 		}
 
 		document.getElementById('go').disabled = false;
