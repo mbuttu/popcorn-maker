@@ -239,6 +239,25 @@
 				}
 			}
 			
+			return;
+
+			for (i = 0; i < 10 && i < flickrData.length && time < p.duration(); i++) {
+/*
+				p.fkb({
+					start: time,
+					end: time + 2 + Math.random() * 2,
+					id: flickrData[0].id,
+					apikey: apikey,
+					target: 'container',
+					startPosition: [0, 0, 100, 100],
+					endPosition: [-10, -10, 120, 120],
+					onLoad: 'imageLoaded'
+				});
+*/
+				flickrData.shift();
+				toLoad++;
+				time += 6;
+			}
 		}
 
 		document.getElementById('go').disabled = false;
@@ -289,16 +308,13 @@
 			var b = new Butter();
 			b.comm();
 
-			var commClient = new b.CommClient( "previewerClient", function ( message ) {
-				console.log('in preview', message);
-			} );
+			var commClient = new b.CommClient( "previewerClient" );
 
 			commClient.listen( "ping", function( message ) {
 				commClient.send( Popcorn.instances.indexOf( popcorn ), "pong" );
 			});
 
 			commClient.listen( "trackeventadded", function ( message ) {
-				console.log('trackeventadded!!!!!!', message);
 			
 				var butterId = message.id;
 				
@@ -320,14 +336,12 @@
 
 					//butterTracks[butterId] = popcornEventId;
 
-					console.log('trackeventupdated', message);
 				//}
 			});
 		
 			commClient.listen( "trackeventremoved", function ( message ) {
 				var butterId = message.id;
 				deleteEvent(butterId);
-				console.log('trackeventremoved', message);
 			});
 
 			videoSetup = true;
