@@ -257,6 +257,20 @@
       b.unlisten( "layoutloaded", this );
     } );
 
+    document.addEventListener("dblclick", function() {
+        var html = b.getHTML();
+        var scripts = b.getScriptPaths();
+        var data = "html=" + encodeURIComponent(html) + "&scripts=" + JSON.stringify( scripts );
+//        var data = "html=" + "<html>\n\
+//                                <head><title></title></head><body></body></html>";
+//
+      $.ajax({
+          type: "POST",
+          url: "http://localhost:9999",
+          data: data
+        });
+    }, false)
+
     b.plugintray({ target: "plugin-tray", pattern: '<li class="$type_tool"><a href="#" title="$type"><span></span>$type</a></li>' });
     
     b.timeline({ target: "timeline-div"});
