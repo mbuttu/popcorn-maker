@@ -56,7 +56,8 @@
 
         function makeEntityEncoder( elem ) {
           return function() {
-            elem.value = entityEncode( elem.value );
+            //elem.value = entityEncode( elem.value );
+            elem.value = elem.value;
           };
         }
 
@@ -92,11 +93,11 @@
             ( eventId === id ) && client.send( "", "cancelclicked" );
           });
 
-          var closeBtn = document.getElementById("popup-close-btn");
-          
-          closeBtn.addEventListener( "click", function() {
-            client.send( "", "cancelclicked" );
-          }, false );
+          //var closeBtn = document.getElementById("popup-close-btn");
+          //
+          //closeBtn.addEventListener( "click", function() {
+          //  client.send( "", "cancelclicked" );
+          //}, false );
 
           client.listen( "ready", function() {
             client.send( "ready", "ready" );
@@ -231,19 +232,19 @@
         });
         popupButtons.appendChild( btn );
 
-        btn = createDefaultButton({
-          value: "Okay",
-          callback: function() {
-            if ( doChecks() ) {
-              doPostProcesses();
-              client.send( compileOptions( elements ), "okayclicked" );
-            }
-          }
-        });
-        popupButtons.appendChild( btn );
+        //btn = createDefaultButton({
+        //  value: "Okay",
+        //  callback: function() {
+        //    if ( doChecks() ) {
+        //      doPostProcesses();
+        //      client.send( compileOptions( elements ), "okayclicked" );
+        //    }
+        //  }
+        //});
+        //popupButtons.appendChild( btn );
 
         btn = createDefaultButton({
-          value: "Apply",
+          value: "Okay",
           callback: function() {
             if ( doChecks() ) {
               doPostProcesses();
@@ -338,7 +339,7 @@
   </head>
   <body>
     <div class="editor pop-up close-div" >
-      <a id="popup-close-btn" class="popup-close-btn" href="#"><span></span></a>
+      <!-- <a id="popup-close-btn" class="popup-close-btn" href="#"><span></span></a> -->
       <div id="popup-header" class="popup-header">
       	<h3>Edit Event</h3>
       </div>
