@@ -4,7 +4,7 @@
     var butter = pm.butter,
         popupManager = pm.popupManager;
 
-    popupManager.addPopup( "editor", "#editor-popup" );
+    //popupManager.addPopup( "editor", "#editor-popup" );
     popupManager.addPopup( "edit-target", "#edit-target-popup" );
 
     butter.listen( "clientdimsupdated", function( e ) {
@@ -13,10 +13,10 @@
         e.data.window.resizeTo( size.width, size.height );
       }
       else {
-        popupManager.showPopup( "editor", {
-          width: size.width,
-          height: size.height
-        });
+        //popupManager.showPopup( "editor", {
+        //  width: size.width,
+        //  height: size.height
+        //});
         $('#butter-editor-iframe')
           .css("height", size.height + "px")
           .css("width", size.width + "px" );
@@ -26,20 +26,20 @@
     
     butter.listen ( "trackeditstarted", function( message ) {
       if ( message.data.type !== "window" ) {
-        popupManager.showPopup( "editor" );
+        //popupManager.showPopup( "editor" );
       }
     });
 
     butter.listen( "trackeditfailed", function( message ) {
       if ( message.data.type !== "window" ) {
-        popupManager.hidePopup( "editor" );
+        //popupManager.hidePopup( "editor" );
         alert( "Failed to open editor. Check editor configurations." );
       }
     });
     
     butter.listen ( "trackeditclosed", function( message ) {
       if ( message.data.type !== "window" ) {
-        popupManager.hidePopup( "editor" );
+        //popupManager.hidePopup( "editor" );
       }
     });
   };
