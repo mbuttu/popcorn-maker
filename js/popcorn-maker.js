@@ -23,7 +23,11 @@
     Butter.Logger.logFunction = function( logMessage ) {
       console.log( "From Butter", logMessage );
     };
+
     var _butter = new Butter();
+    // purposely making b a global variable so that
+    // Popcorn Maker FCP has access to it
+    window.b = _butter;
 
     var _templateManager = new TemplateManager({
           config: TEMPLATES_CONFIG,
@@ -80,7 +84,7 @@
  
     _timeline.showTools(); 
     _popupManager.hidePopups();
-    _popupManager.showPopup( "welcome" );
+    //_popupManager.showPopup( "welcome" );
 
     function onKeyPress( event ) {
       var inc = event.shiftKey ? 1 : 0.1;
@@ -279,7 +283,10 @@
 
   window.addEventListener("DOMContentLoaded", function() {
    
-    var pm = new PopcornMaker();
+    var pm = new PopcornMaker(),
+    appController = window.appController,
+    tracks = JSON.parse(appController.tracksAsJSON()),
+    idx;
 
     $(function() {
       $( ".draggable" ).draggable();
@@ -297,6 +304,54 @@
     c = $("#contentheader");
 
     $('a[title!=""]', c).qtip(d.links);
+
+    pm.createPreview({
+      target: "main",
+      popcornUrl: "lib/popcorn-complete.js",
+      butterUrl: Butter.getScriptLocation() + "butter.js",
+      defaultMedia: appController.moviePath,
+      template: {
+        template: appController.layoutPath
+      },
+      onload: function( preview ) {
+        if ( appController.exportedProject ) {
+          console.log("IMPORTING PROJECT");
+          //b.clearProject();
+          b.importProject( JSON.parse( appController.exportedProject ) );
+        }
+        else {
+          console.log("USE DATA FROM FCP");
+          for (idx = 0; idx < tracks.length; idx++) {
+            var events = tracks[idx].events;
+            var eventIdx;
+
+            var butterTrack = new Butter.Track();
+            b.addTrack(butterTrack);
+
+            for (eventIdx = 0; eventIdx < events.length; eventIdx++) {
+              var event = events[eventIdx];
+
+              var popcornOptions = {
+                start: event.start,
+                end: event.end
+              };
+
+              if ( event.text ) {
+                popcornOptions.text = event.text;
+              }
+
+              var butterTrackEvent = new Butter.TrackEvent({
+                type: event.type,
+                popcornOptions: popcornOptions
+              });
+
+              butterTrackEvent.track = butterTrack;
+              b.addTrackEvent(butterTrack, butterTrackEvent);
+            }
+          }
+        }
+      }
+    });
 
     $(window).bind("beforeunload", function( event ) {
       return "Are you sure you want to leave Popcorn Maker?";
