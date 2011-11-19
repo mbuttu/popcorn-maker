@@ -1,0 +1,41 @@
+<html>
+  <head>
+    <script src="../../lib/popcorn/popcorn.js"></script>
+    <script src="../../lib/popcorn/popcorn.youtube.js"></script>
+    <script src="../../lib/popcorn/popcorn.vimeo.js"></script>
+    <script src="../../lib/popcorn/popcorn.soundcloud.js"></script>
+    <script src="../../lib/popcorn/popcorn.timeline.js"></script>
+    <script src="../../lib/popcorn/popcorn.footnote.js"></script>
+    <script src="../../butter/src/previewer/butter.previewer.js"></script>
+  </head>
+  <style>
+    body {
+      font-family: helvetica, verdana;
+      font-size: 14px;
+    }
+
+    video {
+      float: left;
+      display: inline;
+    }
+
+    .content-div {
+      width: 500px;
+      height: 500px;
+      border: 1px solid #000;
+      float: left;
+      display: inline;
+    }
+
+    #main {
+      float: left;
+      min-width: 300px;
+      min-height: 200px;
+    }
+  </style>
+  <body>
+    <div id="main" data-butter="media"></div>
+    <div class="content-div" data-butter="target" id="div-content"></div>
+    <!-- <div class="content-div" data-butter="target" id="sample-div-2"></div> -->
+  </body>
+</html>
