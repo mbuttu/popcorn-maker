@@ -108,10 +108,10 @@
 
         _timeline.showTools();
         _popupManager.hidePopups();
-        _popupManager.showPopup( "welcome", {
-          onClose: function(){
-          }
-        });
+        //_popupManager.showPopup( "welcome", {
+        //  onClose: function(){
+        //  }
+        //});
 
         that.state = "ready";
 
@@ -189,7 +189,7 @@
         else {
           document.removeEventListener( "keydown", onKeyDown, false);
         }
-      } //toggleKeyboardFunctions
+      }; //toggleKeyboardFunctions
 
       this.buildRegistry = function( registry ) {
         for( var manifest in registry ) {
@@ -322,7 +322,7 @@
           importData: previewOptions.projectData,
           exportBaseUrl: "http://mozillapopcorn.org/maker/" + previewOptions.template.template,
           onload: function( preview ) {
-            that.currentProject.template = previewOptions.template
+            that.currentProject.template = previewOptions.template;
             that.buildRegistry( _butter.currentMedia.registry );
             that.currentProject.initialized = true;
             _buttonManager.toggleSet( "preview", true );
@@ -343,7 +343,7 @@
       var _butter = new Butter({
         modules: {
           eventeditor: {
-            target: "editor-popup",
+            target: "editor-popup"
           },
           pluginmanager: {
             target: "plugin-tray",
@@ -362,6 +362,10 @@
         },
         ready: init
       }); //butter
+
+      // purposely making b a global variable so that
+      // Popcorn Maker FCP has access to it
+      window.b = _butter;
 
     } //PopcornMaker
 
