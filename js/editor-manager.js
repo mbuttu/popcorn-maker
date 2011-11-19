@@ -8,6 +8,17 @@
 
       function Editor( editorName ) {
 
+        var targetDiv = appController.editorDOMWindow.document.getElementById("targetDiv");
+
+        if ( !targetDiv ) {
+          targetDiv = appController.editorDOMWindow.document.createElement("div");
+          targetDiv.id = "targetDiv";
+          targetDiv.style.width = "100%";
+          targetDiv.style.height = "100%";
+          targetDiv.style.border = "none";
+          appController.editorDOMWindow.document.body.appendChild(targetDiv);
+        }
+
         var editorBasePath = rootDir + "/" + editorName;
         var editorOptions = utils.getJSON( editorBasePath + "/manifest.json" );
 
@@ -17,7 +28,8 @@
 
         this.init = function( butter ) {
           var path = editorBasePath + "/" + editorOptions.editor;
-          var view = editorOptions.view !== "window" ? "editor-popup" : "window";
+          //var view = editorOptions.view !== "window" ? "editor-popup" : "window";
+          var view = editorOptions.view !== "window" ? targetDiv : "window";
           butter.eventeditor.addEditor( path, editorOptions.plugin, view );
         }; //init
       } //Editor
