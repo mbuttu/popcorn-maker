@@ -60,6 +60,9 @@ THE SOFTWARE.
       if ( typeof target === "string" && target !== "window" ) {
         targetContainer = document.getElementById( target );
       } //if
+      else {
+        targetContainer = target;
+      } //else
 
       this.construct = function( trackEvent ) {
         var updateEditor = function( e ){
@@ -75,8 +78,8 @@ THE SOFTWARE.
           commServer.send( editorLinkName, butter.targets, "domtargetsupdated" );
         };
         var clientDimsUpdated = function( dims ) {
-          editorHeight = dims.height;
-          editorWidth = dims.width;
+          //editorHeight = dims.height;
+          //editorWidth = dims.width;
           butter.trigger( "clientdimsupdated", that, "eventeditor" );
         };
         var undoListeners = function() {
@@ -284,7 +287,9 @@ THE SOFTWARE.
       return editors[ pluginType ] = new Editor({
         source: editorSource,
         type: pluginType,
-        target: target
+        target: target,
+        editorWidth: "100%",
+        editorHeight: "250px"
       });
     }; //addCustomEditor
           
