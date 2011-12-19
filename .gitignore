@@ -3,6 +3,7 @@
 *.log
 *.log.*
 *.pyc
+.DS_Store
 dist/
 server/bin
 server/include
