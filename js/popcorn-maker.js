@@ -44,8 +44,28 @@
       this.currentProject = {
         guid: utils.getUUID(),
         preview: undefined,
-        template: undefined
+        template: undefined,
+        mediaErrorState: {},
+        initialized: false
       }; //currentProject
+
+      // horrible, horrible hack. must replace later
+      this.state = "initializing";
+
+      Object.defineProperty( this, "isMediaBroken", {
+        get: function() {
+          return Object.keys( that.currentProject.mediaErrorState ).length > 0;
+        }
+      });
+
+      Object.defineProperty( this, "mediaAccessAllowed", {
+        get: function() {
+          return !that.isMediaBroken
+            && that.currentProject.initialized
+            && that.currentProject.preview
+            && that.currentProject.template;
+        }
+      });
 
       var init = function( e ) {
         _butter = e.data;
@@ -53,21 +73,23 @@
         _templateManager = new TemplateManager({
           config: TEMPLATES_CONFIG,
           container: "layout-select",
+          description: "template-description",
           layoutsDir: LAYOUTS_DIR
         });
         _editorManager = new EditorManager({
           config: EDITORS_CONFIG,
           editorsDir: EDITORS_DIR
         });
-        _popupManager = new PopupManager(),
+        _popupManager = new PopupManager( that ),
         _buttonManager = new ButtonManager();
 
         _editorManager.initEditors( _butter );
-        _butter.setProjectDetails("title", "Untitled Project" );
 
         _popupManager.addPopup( "change-media", "#change-media-popup" );
         _popupManager.addPopup( "edit-track", "#edit-track-popup" );
         _popupManager.addPopup( "delete-track", "#delete-track-popup" );
+        _popupManager.addPopup( "load-failed", "#load-failed-popup" );
+        _popupManager.addPopup( "load-timeout", "#media-timeout-popup" );
 
         _loadingOverlay = $( "#loading-overlay" );
         _loadingOverlay.hide();
@@ -83,38 +105,48 @@
         _editor = new Editor( that );
         _preview = new Preview( that );
         _welcome = new Welcome( that );
-     
-        _timeline.showTools(); 
+
+        _timeline.showTools();
         _popupManager.hidePopups();
-        _popupManager.showPopup( "welcome" );
+        _popupManager.showPopup( "welcome", {
+          onClose: function(){
+          }
+        });
+
+        that.state = "ready";
+
+        _buttonManager.addSet( "all", [
+          "add-project",
+          "change-title",
+          "change-url",
+          "confirm-delete-project",
+          "confirm-load",
+          "create-new",
+          "credits",
+          "delete-project",
+          "edit-projects",
+          "import-json",
+          "load-project",
+          "open-help",
+          "popup-close",
+          "publish-project",
+          "retry-load",
+          "save-project",
+          "save-project-data",
+          "show-html",
+          "show-json",
+          "timeout-keep-waiting",
+          "timeout-retry-load",
+          "wizard-add-project",
+          "wizard-create-new"
+        ]);
+
       }; //init
 
       Object.defineProperty( that, "popupManager", { get: function() { return _popupManager; } } );
       Object.defineProperty( that, "templateManager", { get: function() { return _templateManager; } } );
       Object.defineProperty( that, "buttonManager", { get: function() { return _buttonManager; } } );
       Object.defineProperty( that, "butter", { get: function() { return _butter; } } );
-
-      var _butter = new Butter({
-        modules: {
-          eventeditor: {
-            target: "editor-popup",
-          },
-          pluginmanager: {
-            target: "plugin-tray",
-            pattern: '<li class="$type_tool"><a href="#" title="$type"><span></span>$type</a></li>'
-          },
-          timeline: {
-            target: "timeline-div"
-          },
-          trackeditor: {
-            target: "edit-target-popup"
-          },
-          previewer: {
-            target: "main",
-          }
-        },
-        ready: init
-      }); //butter
 
       function onKeyDown( event ) {
         var inc = event.shiftKey ? 1 : 0.1;
@@ -171,6 +203,8 @@
         if ( that.currentProject.preview ) {
           that.currentProject.preview.destroy();
           delete that.currentProject.preview;
+          delete that.currentProject.template;
+          that.currentProject.initialized = false;
         } //if
       }; //destroyCurrentPreview
 
@@ -179,7 +213,8 @@
           template: that.currentProject.template.root,
           title: that.currentProject.title,
           guid: that.currentProject.guid || utils.getUUID(),
-          project: _butter.exportProject()
+          project: _butter.exportProject(),
+          timeStamp: that.currentProject.timeStamp
         };
       }; //getProjectExport
 
@@ -194,11 +229,11 @@
           if ( !overwrite ) {
             that.currentProject.guid = utils.getUUID();
           } //if
-   
+
+          that.currentProject.timeStamp = Date.now();
           var projectToSave = that.getProjectExport();
           localProjects[ projectToSave.guid ] = projectToSave;
           localStorage.setItem( "PopcornMaker.SavedProjects", JSON.stringify( localProjects ) );
-          _menu.populateSavedProjectsList();
           _popupManager.hidePopups();
         }
         catch ( e ) {
@@ -212,17 +247,19 @@
         if ( localProjects && localProjects[ guid ] ) {
           var projectData = localProjects[ guid ],
               template = _templateManager.find( { root: projectData.template } );
-          _butter.clearProject();         
+          _butter.clearProject();
           _butter.pluginmanager.clear();
           that.toggleLoadingScreen( true );
           that.toggleKeyboardFunctions( false );
           _popupManager.hidePopups();
+          that.currentProject.initialized = false;
           that.createPreview({
             template: template,
             projectData: projectData.project,
             onload: function( preview ) {
               that.currentProject.title = projectData.title;
               that.currentProject.guid = projectData.guid;
+              that.currentProject.timeStamp = projectData.timeStamp;
             }
           });
         } //if
@@ -231,10 +268,10 @@
       this.newProject = function( projectOptions ) {
         _butter.clearProject();
         _butter.pluginmanager.clear();
-        _butter.setProjectDetails( "title", projectOptions.title );
         that.toggleLoadingScreen( true );
         that.toggleKeyboardFunctions( false );
         that.destroyCurrentPreview();
+        that.currentProject.initialized = false;
         that.createPreview({
           template: _templateManager.find( { template: projectOptions.template } ),
           defaultMedia: projectOptions.defaultMedia,
@@ -249,18 +286,20 @@
       }; //newProject
 
       this.importProject = function( projectData, defaultMedia ) {
-        _butter.clearProject(); 
+        _butter.clearProject();
         _butter.pluginmanager.clear();
         that.toggleLoadingScreen( true );
         that.toggleKeyboardFunctions( false );
         that.destroyCurrentPreview();
 
-        if (  projectData && 
-              projectData.project && 
-              projectData.project.media && 
+        if (  projectData &&
+              projectData.project &&
+              projectData.project.media &&
               projectData.project.media.length > 0 ) {
-          defaultMedia = projectData.project.media[ 0 ].url;       
+          defaultMedia = projectData.project.media[ 0 ].url;
         } //if
+
+        that.currentProject.initialized = false;
 
         that.createPreview({
           template: _templateManager.find( { root: projectData.template } ) || _templateManager.templates[ 0 ],
@@ -269,28 +308,60 @@
           onload: function() {
             that.currentProject.guid = projectData.guid || utils.getUUID();
             that.currentProject.title = projectData.title;
+            that.currentProject.timeStamp = projectData.timeStamp;
           }
         });
       }; //importProject
 
       this.createPreview = function( previewOptions ) {
+        that.state = "create-preview";
         that.destroyCurrentPreview();
         that.currentProject.preview = new _butter.previewer.Preview({
           template: previewOptions.template.template,
           defaultMedia: previewOptions.defaultMedia,
           importData: previewOptions.projectData,
+          exportBaseUrl: "http://mozillapopcorn.org/maker/" + previewOptions.template.template,
           onload: function( preview ) {
             that.currentProject.template = previewOptions.template
             that.buildRegistry( _butter.currentMedia.registry );
+            that.currentProject.initialized = true;
+            _buttonManager.toggleSet( "preview", true );
             if ( previewOptions.onload ) {
               previewOptions.onload( preview );
             }
+            _popupManager.hidePopups();
             $('.tiny-scroll').tinyscrollbar();
             that.toggleLoadingScreen( false );
             that.toggleKeyboardFunctions( true );
-          } //onload
+          }, //onload
+          onfail: function( preview ) {
+            that.toggleKeyboardFunctions( true );
+          }
         }); //Preview
       }; //createPreview
+
+      var _butter = new Butter({
+        modules: {
+          eventeditor: {
+            target: "editor-popup",
+          },
+          pluginmanager: {
+            target: "plugin-tray",
+            pattern: '<li class="$type_tool"><a href="#" title="$type"><span></span>$type</a></li>'
+          },
+          timeline: {
+            target: "timeline-div"
+          },
+          trackeditor: {
+            target: "edit-target-popup"
+          },
+          previewer: {
+            target: "main",
+            exportBaseUrl: "http://mozillapopcorn.org/maker"
+          }
+        },
+        ready: init
+      }); //butter
 
     } //PopcornMaker
 

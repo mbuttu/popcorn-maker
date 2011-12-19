@@ -1,9 +1,7 @@
 (function() {
 	"use strict";
 	
-	var Butter = window.Butter,
-		urlRegex = /^(([A-Za-z]+):\/\/)+(([a-zA-Z0-9\._\-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})|localhost)(\:([0-9]+))*(\/[^#]*)?(\#.*)?$/;
-
+	var	urlRegex = /^(([A-Za-z]+):\/\/)+(([a-zA-Z0-9\._\-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})|localhost)(\:([0-9]+))*(\/[^#]*)?(\#.*)?$/;
 
 	function clone(obj) {
 		if (null == obj || "object" != typeof obj) return obj;
@@ -278,12 +276,11 @@
 			this.fields[name] = field;
 		}
 
-		this.butter = new Butter();
-		
-		this.client = new Butter.CommClient('defaultEditor');
+		this.client = new ButterEditor.Comm.CommClient('defaultEditor');
 
-		this.client.listen('edittrackevent', function (message) {
-			var n, field, options;
+		this.client.listen('edittrackevent', function (e) {
+			var message = e.data,
+          n, field, options;
 
 			that.id = message.id;
 			that.client.send( {
@@ -319,8 +316,9 @@
 			that.updateForm();
 		});
 
-		this.client.listen('trackeventupdated', function (message) {
-			var n, field, options;
+		this.client.listen('trackeventupdated', function (e) {
+			var message = e.data,
+          n, field, options;
 
 			if (that.id === message.id) {
 				that.pushState();
@@ -342,8 +340,8 @@
 			}
 		});
 
-		this.client.listen( "domtargetsupdated", function( message ) {
-			that.targetsUpdated(message);
+		this.client.listen( "domtargetsupdated", function( e ) {
+			that.targetsUpdated(e.data);
 		});
 
 		this.client.listen( "ready", function() {
@@ -417,7 +415,7 @@
 		this.pushState();
 
 		if (this.saveValue[field.type]) {
-			this.trackEvent[fieldName] = this.saveValue[field.type](value);
+			this.trackEvent[fieldName] = this.saveValue[field.type](value, field);
 		} else {
 			this.trackEvent[fieldName] = value;
 		}

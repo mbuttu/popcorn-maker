@@ -5,7 +5,8 @@
     var Previewer = function( butter, options ) {
 
       var id = "Previewer" + Previewer.guid++,
-          logger = new Logger( id );
+          logger = new Logger( id ),
+          defaultExportBaseUrl = options.exportBaseUrl;
 
       var popcornUrl = options.popcornUrl || "http://popcornjs.org/code/dist/popcorn-complete.js";
 
@@ -21,7 +22,9 @@
             previewIframe,
             defaultMedia = options.defaultMedia,
             importData = options.importData,
-            onload = options.onload
+            onload = options.onload,
+            onfail = options.onfail,
+            exportBaseUrl = options.exportBaseUrl || defaultExportBaseUrl,
             id = "Preview" + Preview.guid++,
             logger = new Logger( id );
 
@@ -51,7 +54,7 @@
           }
           function onMediaTimeUpdate( e ) {
             if ( e.data.currentTime !== currentTime ) {
-              logger.log( "Sending mediatimeupdate: " + currentTime + ", " + e.data.currentTime );
+              //logger.log( "Sending mediatimeupdate: " + currentTime + ", " + e.data.currentTime );
               server.send( "link", e.data.currentTime, "mediatimeupdate" );
             } //if
           }
@@ -83,7 +86,7 @@
           function setup( iframeWindow ) {
             server.bindClientWindow( "link", iframeWindow, function( message ) {
             });
-            
+
             that.play = function() {
               logger.log( 'Playing' );
               server.send( "link", "play", "play" );
@@ -105,9 +108,20 @@
               server.send( "link", "mute", "mute" );
             }; //mute
 
-            server.listen( "link", "error", function( error ) {
-              //logger.error( error.message );
-              butter.dispatch( "error", error );
+            server.listen( "link", "error", function( e ) {
+              if ( e.data.type === "media-loading" ) {
+                butter.dispatch( "previewerfail" );
+                onfail && onfail( that );
+              } else {
+                butter.dispatch( { data: {} }, "error" );
+              }
+            });
+
+            server.listen( "link", "mediatimeout", function( e ) {
+              butter.dispatch( "previewertimeout", {
+                preview: that,
+                media: butter.getMedia( { id: e.data } )
+              });
             });
 
             server.listen( "link", "loaded", function( e ) {
@@ -130,11 +144,12 @@
                     butter.importProject( importData );
                   } //if
                   butter.dispatch( "previewready", that );
+                  server.send( "link", "cancelmediatimeout", "cancelmediatimeout" );
                   onload && onload( that );
                 } //if
               });
             });
-            
+
             server.listen( "link", "mediapaused", function( e ) {
               logger.log( "Received mediapaused" );
               isPlaying = false;
@@ -183,7 +198,7 @@
 
           var iframeWindow = previewIframe.contentWindow || previewIframe.contentDocument;
           setup( iframeWindow );
-          
+
           // Ugly hack to continue bootstrapping until Butter script is *actually* loaded.
           // Impossible to really tell when <script> has loaded (security).
           logger.log( "Bootstrapping" );
@@ -191,7 +206,8 @@
           function sendSetup() {
             server.send( "link", {
               defaultMedia: defaultMedia,
-              importData: importData
+              importData: importData,
+              exportBaseUrl: exportBaseUrl
             }, "setup" );
           } //sendSetup
           server.listen( "link", "setup", function( e ) {
@@ -209,6 +225,7 @@
           }; //fetchHTML
 
           this.destroy = function() {
+            server.send( "link", null, "destroy" );
             server.destroy();
             butter.unlisten( "mediaadded", onMediaAdded );
             butter.unlisten( "mediachanged", onMediaChanged );
@@ -219,6 +236,10 @@
             butter.unlisten( "trackeventremoved", onTrackEventRemoved );
             butter.unlisten( "trackeventupdated", onTrackEventUpdated );
           }; //destroy
+
+          this.waitForMedia = function( media ) {
+            server.send( "link", media.id, "waitformedia" );
+          }; //waitForMedia
 
           Object.defineProperty( this, "type", {
             get: function() { return linkType; }
@@ -233,9 +254,9 @@
             logger.log( "IFRAME Loaded: " + iframe.src );
             link = new PreviewerLink({
             });
-            iframe.removeEventListener( "load", onLoad, false ); 
+            iframe.removeEventListener( "load", onLoad, false );
           } //onLoad
-          iframe.addEventListener( "load", onLoad, false ); 
+          iframe.addEventListener( "load", onLoad, false );
         } //loadIfram
 
         if ( target.tagName === "DIV" ) {
@@ -288,7 +309,7 @@
         this.pause = function() {
           link.pause();
         }; //pause
-        
+
         this.mute = function() {
           link.mute();
         }; //mute
@@ -299,6 +320,10 @@
             previewIframe.setAttribute( "src", "about:blank" );
           }
         }; //destroy
+
+        this.waitForMedia = function( media ) {
+          link.waitForMedia( media );
+        }; //waitForMedia
 
         Object.defineProperty( this, "type", {
           get: function() { return link.type; }

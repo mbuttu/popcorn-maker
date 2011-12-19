@@ -34,11 +34,11 @@
       },
       onmediachanged: function( e ) {
         if ( template.link.currentMedia ) {
-          template.link.currentMedia.removeHandlers( template.link.comm );
+          template.link.removeMediaHandlers();
         }
         var currentMedia = template.link.currentMedia = template.link.getMedia( e.data.id );
         if ( currentMedia ) {
-          currentMedia.addHandlers( template.link.comm, {
+          template.link.addMediaHandlers({
             'trackeventadded': function( e ) {
               var media = template.link.currentMedia;
               media.popcorn[ e.data.type ]( e.data.popcornOptions );
@@ -69,15 +69,17 @@
         if ( !link.getMedia( e.data.id ) ) {
           var media = new ButterTemplate.Media( e.data );
           link.addMedia( media );
-          media.prepareMedia( media.findMediaType() );
-          media.createPopcorn( media.generatePopcornString({
-            options: {
-              frameAnimation: true
+          media.prepare({
+            success: function( successOptions ) {
+              link.setupPopcornHandlers();
+              callback( media );
+            },
+            timeout: function() {
+              link.sendTimeoutError( media );
+            },
+            error: function( e ) {
+              link.sendLoadError( e );
             }
-          }) );
-          media.waitForPopcorn( function( popcorn ) {
-            media.setupPopcornHandlers( link.comm );
-            link.sendMedia( media );
           });
         }
       },

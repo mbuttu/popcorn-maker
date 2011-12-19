@@ -5,11 +5,45 @@
           originalBody, originalHead,
           currentMedia, popcornScript,
           popcornUrl = options.popcornUrl || "http://popcornjs.org/code/dist/popcorn-complete.js",
+          exportBaseUrl = options.exportBaseUrl,
           defaultMedia = options.defaultMedia,
           importData = options.importData,
           that = this,
           linkType = options.type || "basic",
-          comm = new Comm.CommClient( "link" );
+          comm = new Comm.CommClient( "link" ),
+          mediaHandlers = {};
+
+      this.addMediaHandlers = function( options ) {
+        for ( var name in options ) {
+          if ( options.hasOwnProperty( name ) ) {
+            mediaHandlers[ name ] = options[ name ];
+            comm.listen( name, mediaHandlers[ name ] );
+          } //if
+        } //for
+      }; //addMediaHandlers
+
+      this.removeMediaHandlers = function() {
+        for ( var name in mediaHandlers ) {
+          if ( mediaHandlers.hasOwnProperty( name ) ) {
+            comm.unlisten( name, mediaHandlers[ name ] );
+            delete mediaHandlers[ name ];
+          } //if
+        } //for
+      }; //removeMediaHandlers
+
+      this.setupPopcornHandlers = function() {
+        currentMedia.popcorn.media.addEventListener( "timeupdate", function() {
+          comm.send( currentMedia.popcorn.media.currentTime, "mediatimeupdate" );                
+        },false);
+        currentMedia.popcorn.media.addEventListener( "pause", function() {
+          comm.send( "paused", "log" );
+          comm.send( currentMedia.id, "mediapaused" );
+        }, false);
+        currentMedia.popcorn.media.addEventListener( "playing", function() {
+          comm.send( "playing", "log" );
+          comm.send( currentMedia.id, "mediaplaying" );
+        }, false);
+      }; //setupPopcornHandlers
 
       var mediaChangedHandler = options.onmediachanged || function() {},
           mediaAddedHandler = options.onmediaadded || function() {},
@@ -18,16 +52,31 @@
           mediaRemovedHandler = options.onmediaremoved || function() {},
           fetchHTMLHandler = options.onfetchhtml || function() {};
 
-      comm.listen( 'mediachanged', mediaChangedHandler );
-      comm.listen( 'mediaadded', mediaAddedHandler );
-      comm.listen( 'mediaremoved', mediaRemovedHandler );
-      comm.listen( 'mediatimeupdate', mediaTimeUpdateHandler );
-      comm.listen( 'mediacontentchanged', mediaContentChangedHandler );
+      comm.listen( "mediachanged", mediaChangedHandler );
+      comm.listen( "mediaadded", mediaAddedHandler );
+      comm.listen( "mediaremoved", mediaRemovedHandler );
+      comm.listen( "mediatimeupdate", mediaTimeUpdateHandler );
+      comm.listen( "mediacontentchanged", mediaContentChangedHandler );
+
+      comm.listen( "destroy", function( e ) {
+        for ( var m in medias ) {
+          if ( medias.hasOwnProperty( m ) ) {
+            medias[ m ].interruptLoad();
+          } //if
+        } //for 
+      });
+
+      comm.listen( "waitformedia", function( e ) {
+        var media = medias[ e.data ];
+        if ( media ) {
+          media.waitForMedia();
+        } //if
+      });
 
       comm.returnAsync( "linktype", function() {
         return linkType;
       });
-      
+
       comm.returnAsync( 'html', fetchHTMLHandler );
 
       Object.defineProperty( this, "comm", {
@@ -36,7 +85,17 @@
         }
       });
 
-      this.getHTML = function( projectData ) {
+      function concatNodeLists( list1, list2 ) {
+        var array1 = Array.prototype.slice.call( list1 ),
+            array2 = Array.prototype.slice.call( list2 );
+
+        return array1.concat( array2 );
+      } //concatNodeLists
+
+      this.getHTML = function( projectData, baseUrl ) {
+        
+        baseUrl = baseUrl || exportBaseUrl;
+
         var html = document.createElement( "html" ),
             head = originalHead.cloneNode( true ),
             body = originalBody.cloneNode( true );
@@ -45,8 +104,26 @@
           projectData = JSON.stringify( projectData );
         } //if
 
-        var scripts = head.getElementsByTagName( "script" ),
+        var originalScripts = concatNodeLists( originalHead.getElementsByTagName( "script" ), originalBody.getElementsByTagName( "script" ) );
+        function isInOriginals( script ) {
+          for ( var i=0, l=originalScripts.length; i<l; ++i ) {
+            if ( originalScripts[ i ].src === script.src ) {
+              return true;
+            } //if
+          } //for
+          return false;
+        } //checkInOriginals
+
+        var scripts = concatNodeLists( body.getElementsByTagName( "script" ), head.getElementsByTagName( "script" ) ),
             projectScript;
+        for ( var i=scripts.length-1; i>0; --i ) {
+          var script = scripts[ i ];
+
+          if ( script.getAttribute( "data-requirecontext" ) === "butter.previewer" || 
+               script.getAttribute( "data-requirebootstrap" ) === "butter.previewer" ) {
+            script.parentNode.removeChild( script );
+          } //if
+        } //for
         for ( var i=0, l=scripts.length; i<l; ++i ) {
           if ( scripts[ i ].getAttribute( "data-butter" ) === "project-data" ) {
             projectScript = scripts[ i ];
@@ -65,6 +142,16 @@
             medias[ media ].alterMediaHTML( body );
           } //if
         } //for
+
+        var baseTag = document.createElement( "base" );
+        baseTag.setAttribute( "href", baseUrl );
+        if ( head.firstChild ) {
+          head.insertBefore( baseTag, head.firstChild );
+        }
+        else {
+          head.appendChild( baseTag );
+        } //if
+
         html.appendChild( head );
         html.appendChild( body );
         return "<!doctype html>\n<html>\n  <head>" + head.innerHTML + "</head>\n  <body>" + body.innerHTML + "</body>\n</html>";
@@ -110,8 +197,8 @@
               // add it to butters target list with a respective type
               if ( thisChild.getAttribute ) {
                 if( thisChild.getAttribute( "data-butter" ) === "target" ) {
-                  comm.send( { 
-                    name: thisChild.id, 
+                  comm.send( {
+                    name: thisChild.id,
                     type: "target"
                   }, "addtarget" );
                 }
@@ -120,7 +207,7 @@
 
                     var mediaSourceUrl = defaultMedia;
                     //var mediaSourceUrl = thisChild.currentSrc;
-                    
+
                     comm.send({
                       target: thisChild.id,
                       url: mediaSourceUrl,
@@ -141,13 +228,13 @@
                       }
                     }
 
-                    comm.send( { 
-                      target: thisChild.id, 
-                      url: vidUrl 
+                    comm.send( {
+                      target: thisChild.id,
+                      url: vidUrl
                     }, "addmedia" );
 
                   }
-                } // else 
+                } // else
               } //if
 
               if ( thisChild.children && thisChild.children.length > 0 ) {
@@ -194,6 +281,31 @@
 
       }; //scrape
 
+      this.sendTimeoutError = function( media ) {
+        comm.send( media.id, "mediatimeout" );
+      }; //sendTimeoutError
+
+      this.sendLoadError = function( e ) {
+        that.sendError({
+          message: "Error loading media.",
+          type: "media-loading",
+          error: "Error loading media."
+        });
+      }; //sendLoadError
+
+      this.sendError = function( errorOptions ) {
+        comm.send({
+          message: errorOptions.message,
+          context: errorOptions.context,
+          type: errorOptions.type,
+          error: JSON.stringify( errorOptions.error || "" )
+        }, "error" );
+      }; //sendError
+
+      this.cancelMediaTimeout = function() {
+        mediaTimeout && clearTimeout( mediaTimeout );
+      };
+
       this.play = function() {
         currentMedia.popcorn.media.play();
       };
@@ -205,7 +317,7 @@
       this.pause = function() {
         currentMedia.popcorn.media.pause();
       };
-        
+
       this.mute = function() {
         currentMedia.popcorn.media.muted = !currentMedia.popcorn.media.muted;
       };

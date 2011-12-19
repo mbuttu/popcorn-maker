@@ -5,18 +5,28 @@
  */
 ({
   // Where to find the module names listed below.
-  baseUrl: '../src',
+  baseUrl: '../',
 
   // Where to find modules that are outside of src.
   // This setup assumes CubicVR.js is the built output,
   // so this build file assumes make has already run in CubicVR.js
   paths: {
-    'previewer': 'previewer'
+    'butter': 'src/butter',
+    'butter-main': 'src/butter-main',
+    'core': 'src/core',
+    'comm': 'src/comm',
+    'previewer': 'src/previewer',
+    'eventeditor': 'src/eventeditor/',
+    'trackeditor': 'src/trackeditor/',
+    'pluginmanager': 'src/pluginmanager/',
+    'timeline': 'src/timeline/',
+    'trackLiner': 'external/trackLiner'
   },
 
   // Use has branch trimming in the build to remove the document.write
   // code in src/butter.js after a minification is done.
   has: {
+    'source-config': false
   },
 
   // Do not minify with the requirejs optimizer, to allow shipping
@@ -28,7 +38,7 @@
   // so it shows up first in the built file,
   // since the butter modules use the define/require APIs that the almond
   // provides. Path is relative to baseUrl.
-  name: '../tools/almond',
+  name: 'tools/almond',
 
   // Files to include along with almond. Their nested dependencies will also be
   // included. Subsystems are listed explicitly because butter-src.js does not

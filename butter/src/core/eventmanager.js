@@ -80,12 +80,31 @@ THE SOFTWARE.
         delete related[ relatedObject ];
       }; //unlistenByType
 
-      this.dispatch = function( type, data, tempTarget ) {
+      this.dispatch = function( typeOrEvent, data, domain ) {
+        var type,
+            preparedEvent,
+            varType = typeof( typeOrEvent );
+        if ( varType === "object" ) {
+          type = typeOrEvent.type;
+          preparedEvent = typeOrEvent;
+          preparedEvent.currentTarget = target || that;
+        }
+        else if ( varType === "string" ) {
+          type = typeOrEvent;
+        } //if
+
         if ( type ) {
-          var theseListeners = listeners[ type ];
-          if ( theseListeners ) {
-            var e = {
-              target: tempTarget || targetName,
+          var theseListeners;
+          //copy the listeners to make sure they're all called
+          if ( listeners[ type ] ) {
+            theseListeners = [];
+            for ( var i=0, l=listeners[ type ].length; i<l; ++i ) {
+              theseListeners.push( listeners[ type ][ i ] );
+            } //for
+            var e = preparedEvent || {
+              currentTarget: target || that,
+              target: target || that,
+              domain: domain || targetName,
               type: type,
               data: data
             };
@@ -104,10 +123,11 @@ THE SOFTWARE.
         to.unlisten = that.unlisten;
         to.dispatch = that.dispatch;
         targetName = name;
+        target = to;
       }; //apply
 
       this.repeat = function( e ) {
-        that.dispatch( e.type, e.data, e.target );
+        that.dispatch( e );
       }; //repeat
 
     }; //EventManager

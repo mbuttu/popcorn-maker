@@ -1,15 +1,16 @@
 (function() {
-  define( [], function() {
+  define( [ "utils" ], function( utils ) {
 
     var Timeline = function( pm ) {
 
       var butter = pm.butter,
-          popupManager = pm.popupManager;
+          popupManager = pm.popupManager,
+          buttonManager = pm.buttonManager;
 
       var propertiesPanel = $( "#properties-panel" ),
           hideTimelineDiv = $( ".hide-timeline" );
-   
-      hideTimelineDiv.css( 'bottom', '36px' );	
+
+      hideTimelineDiv.css( 'bottom', '36px' );
       hideTimelineDiv.css( 'display', 'block' );
       propertiesPanel.css( 'height','38px' );
       propertiesPanel.css( 'display','block' );
@@ -35,7 +36,7 @@
         function() {
           $('.collapse-btn a').css('backgroundPosition','-330px -167px');
           $(".toolbox").animate({ width: "120px" }, 500);
-          $('.collapse-btn a').text("collapse"); 
+          $('.collapse-btn a').text("collapse");
           $(".timeline").stop().animate({ paddingRight:'160px'}, 500);
         }
       );
@@ -44,10 +45,10 @@
         $(this).css('backgroundPosition','-239px -7px');
         $(".hide-timeline").animate({ bottom: '36px' }, 500);
         $("#properties-panel").animate({ height: '38px' }, 500);
-        $(this).text("Show Timeline"); 
+        $(this).text("Show Timeline");
       },function() {
         $(this).css('backgroundPosition','-239px 10px');
-        $(this).text("Hide Timeline"); 
+        $(this).text("Hide Timeline");
         $(".hide-timeline").animate({ bottom: "268px" }, 500);
         $("#properties-panel").animate({ height: "270px" }, 500);
       });
@@ -61,11 +62,12 @@
       $('li.edit a.edit-timeline-media').click(function(){
         pm.popupManager.hidePopups();
         $('#url').val( pm.butter.currentMedia.url );
+        pm.state = "change-media";
         pm.popupManager.showPopup( "change-media" );
       });
 
       $(".p-timeline-title").html( "Untitled Project" );
-      
+
       butter.listen( "mediaready", function() {
         $(".media-title-div").html( butter.currentMedia.url );
       });
@@ -80,7 +82,7 @@
       var timelineTarget = document.getElementById( "timeline-div" );
       var slideValue = 0;
 
-      function checkScrubber( event ) {
+      function checkScrubber() {
 
         layersDiv.style.top = -tracksDiv.scrollTop + "px";
         scrubber.style.left = -tracksDiv.scrollLeft + butter.timeline.currentTimeInPixels() + "px";
@@ -105,9 +107,9 @@
 
       butter.listen( "mediatimeupdate", function( event ) {
 
-        var scrubberLeft = checkScrubber( event );
+        var scrubberLeft = checkScrubber();
 
-        timelineDuration.innerHTML = butter.timeline.secondsToSMPTE( butter.currentTime );
+        timelineDuration.innerHTML = butter.timeline.secondsToSMPTE( Math.round( butter.currentTime ) );
 
         scrubber.style.display = "block";
 
@@ -119,47 +121,75 @@
 
       });
 
-      var zoom = function( event ) {
-
-        if ( event.shiftKey ) {
-          event.preventDefault();
-          butter.timeline.zoom( event.detail || event.wheelDelta );
+      var sliderElement = $( "#slider" );
+      sliderElement.slider({
+        value: 1,
+        min: 1,
+        max: 7,
+        step: 1,
+        slide: function( event, ui ) {
+          slideValue = zoom( slideValue - ui.value );
         }
+      });
 
-        var scrubberLeft = checkScrubber( event );
+      var zoom = function( delta ) {
 
-        if ( scrubberLeft - 5 > scrubberContainer.offsetWidth || scrubberLeft < 0 ) {
-          scrubber.style.display = "none";
-        } else {
-          scrubber.style.display = "block";
+        if ( pm.mediaAccessAllowed ) {
+          var newZoom = butter.timeline.zoom( delta ),
+              scrubberLeft = checkScrubber();
+
+          if ( scrubberLeft - 5 > scrubberContainer.offsetWidth || scrubberLeft < 0 ) {
+            scrubber.style.display = "none";
+          } else {
+            scrubber.style.display = "block";
+          }
+
+          drawCanvas();
+
+          return newZoom;
         }
-
-        drawCanvas();
+        return 0;
       };
 
-      timelineDiv.addEventListener( "DOMMouseScroll", zoom, false );
-      timelineDiv.addEventListener( "mousewheel", zoom, false );
+      var mouseEvent = function( event ) {
+
+        if ( pm.mediaAccessAllowed && event.shiftKey ) {
+
+          event.preventDefault();
+          slideValue = zoom( event.detail || event.wheelDelta );
+          sliderElement.slider( "value", slideValue );
+        }
+      };
+
+      timelineDiv.addEventListener( "DOMMouseScroll", mouseEvent, false );
+      timelineDiv.addEventListener( "mousewheel", mouseEvent, false );
+      timelineDiv.addEventListener( "click", mouseEvent, false );
 
       tracksDiv.addEventListener( "scroll", function( event ) {
 
-        var scrubberLeft = checkScrubber( event );
+        if ( pm.mediaAccessAllowed ) {
+          var scrubberLeft = checkScrubber();
 
-        if ( scrubberLeft - 5 > scrubberContainer.offsetWidth || scrubberLeft < 0 ) {
-          scrubber.style.display = "none";
-        } else {
-          scrubber.style.display = "block";
-        }
+          if ( scrubberLeft - 5 > scrubberContainer.offsetWidth || scrubberLeft < 0 ) {
+            scrubber.style.display = "none";
+          } else {
+            scrubber.style.display = "block";
+          }
 
-        document.getElementById( "timing-notches-canvas" ).style.left = -tracksDiv.scrollLeft + "px";
+          document.getElementById( "timing-notches-canvas" ).style.left = -tracksDiv.scrollLeft + "px";
+        } //if
       }, false );
 
       var scrubberClicked = false;
 
       scrubberContainer.addEventListener( "mousedown", function( event ) {
 
-        scrubberClicked = true;
-        butter.targettedEvent = undefined;
-        butter.timeline.currentTimeInPixels( event.clientX - scrubberContainer.offsetLeft - 22 + tracksDiv.scrollLeft );
+        if ( pm.mediaAccessAllowed ) {
+
+          scrubberClicked = true;
+          butter.targettedEvent = undefined;
+          butter.timeline.currentTimeInPixels( event.clientX - scrubberContainer.offsetLeft - 22 + tracksDiv.scrollLeft );
+        }
       }, false);
 
       document.addEventListener( "mouseup", function( event ) {
@@ -169,7 +199,7 @@
 
       document.addEventListener( "mousemove", function( event ) {
 
-        if ( scrubberClicked ) {
+        if ( scrubberClicked && pm.mediaAccessAllowed ) {
 
           var scrubberPos = event.pageX - scrubberContainer.offsetLeft - 22 + tracksDiv.scrollLeft;
 
@@ -239,30 +269,22 @@
             if ( ( position - lastTimeDisplayed ) > textWidth + padding ) {
 
               lastTimeDisplayed = position;
+              // text color
+              context.fillStyle = "#999999";
               context.fillText( butter.timeline.secondsToSMPTE( i ), -~position - ( textWidth / 2 ), 21 );
             }
 
             lastPosition = position;
           }
         }
+        // stroke color
+        context.strokeStyle = "#999999";
         context.stroke();
         context.closePath();
       };
 
       butter.listen( "timelineready", function( event ) {
         drawCanvas();
-      });
-
-      $( "#slider" ).slider({
-        value:0,
-        min: 0,
-        max: 6,
-        step: 1,
-        slide: function( event, ui ) {
-          butter.timeline.zoom( slideValue - ui.value );
-          drawCanvas();
-          slideValue = ui.value;
-        }
       });
 
       var trackLayers = {};
@@ -273,7 +295,9 @@
 
         var layerDiv = document.createElement( "div" );
         layerDiv.id = "layer-" + track.id;
-        layerDiv.innerHTML = layerDiv.id;
+        $( layerDiv ).append( $( "<textnode/>", {
+          innerHTML: layerDiv.id
+        })[ 0 ] );
         layerDiv.setAttribute("class", "layer-btn");
         layerDiv.style.position = "relative";
 
@@ -303,61 +327,99 @@
 
           editTrackTargets.innerHTML = "<option value=\"\">Media Element (if applicable)</option>";
 
-          var targets = butter.serializeTargets();
+          var targets = butter.serializeTargets(),
+              $trackTitletb = $( "#track-title-input-box" ),
+              $textNode = $( $( layerDiv ).children( "textnode" )[0] );
 
           for ( var i = 0; i < targets.length; i++ ) {
 
             editTrackTargets.innerHTML += "<option value=\"" + targets[ i ].name + "\">" + targets[ i ].name + "</option>";
           }
 
-          var editor = new butter.TrackEditor( track );
-          trackJSONtextArea.value = editor.json;
+          var editor = new butter.trackeditor.Editor( track );
+
+          trackJSONtextArea.value = JSON.stringify( editor.json );
           editTrackTargets.value = editor.target;
 
-          //$('.close-div').fadeOut('fast');
+          $trackTitletb.val( $textNode.text() );
           popupManager.showPopup( "edit-target" );
 
           var closeTrackEditor = function() {
+            $trackTitletb.val( "" );
             popupManager.hidePopups();
-            //$(' .balck-overlay ').delay( 200 ).hide();
-            document.getElementById( "cancel-track-edit" ).removeEventListener( "click", clickCancel, false );
             document.getElementById( "apply-track-edit" ).removeEventListener( "click", clickApply, false );
             document.getElementById( "ok-track-edit" ).removeEventListener( "click", clickOk, false );
             document.getElementById( "delete-track-edit" ).removeEventListener( "click", clickDelete, false );
             document.getElementById( "clear-track-edit" ).removeEventListener( "click", clickClear, false );
             trackJSONtextArea.removeEventListener( "change", changeTarget, false );
+            $( "#delete-track-confirmation" ).children( "a.popup-close-btn" ).unbind( "click" );
+            $( "#clear-track-confirmation" ).children( "a.popup-close-btn" ).unbind( "click" );
+
           }; //closeTrackEditor
 
-          var applyTrackEditor = function() {
-            editor.target = editTrackTargets.value;
-          }; //applyTrackEditor
+          popupManager.showPopup( "edit-target", {
+            onClose: closeTrackEditor
+          });
 
-          function clickCancel( e ) { 
-            closeTrackEditor(); 
+          function applyTrackEditor() {
+            var newName = utils.getSafeString( $trackTitletb.val() );
+            $textNode.text( newName || layerDiv.id );
+            editor.target = editTrackTargets.value;
           }
-          function clickOk( e ) { 
+          function clickOk( e ) {
             applyTrackEditor();
             closeTrackEditor();
           }
-          function clickApply( e ) { 
-            applyTrackEditor(); 
+          function clickApply( e ) {
+            applyTrackEditor();
           }
-          function clickDelete( e ) { 
-            editor.remove();
+          function clickDelete( e ) {
+            popupManager.hidePopups();
+            popupManager.showPopup( "delete-track-confirm", {
+              onClose: function() {
+                popupManager.hidePopups();
+                popupManager.showPopup( "edit-target", {
+                  onClose: closeTrackEditor
+                });
+              }
+            });
+          }
+          buttonManager.add( "delete-track", $( "#delete-track-confirm-btn" ), {
+            click: function() {
+              editor.remove();
+              closeTrackEditor();
+            }
+          });
+
+          function clickClear( e ) {
+            popupManager.hidePopups();
+            popupManager.showPopup( "clear-track-confirm", {
+              onClose: function() {
+                popupManager.hidePopups();
+                popupManager.showPopup( "edit-target", {
+                  onClose: closeTrackEditor
+                });
+              }
+            });
+          }
+          buttonManager.add( "clear-track", $( "#clear-track-confirm-btn" ), {
+            click: function() {
+              $( "#clear-track-confirmation" ).children( "a.popup-close-btn" ).unbind( "click" );
+              trackJSONtextArea.value = "";
+              editor.clear();
+              popupManager.hidePopups();
+              popupManager.showPopup( "edit-target", {
+                onClose: closeTrackEditor
+              });
+            }
+          });
+          function clickEdit( e ) {
             closeTrackEditor();
           }
-          function clickClear( e ) { 
-            trackJSONtextArea.value = "";
-            editor.clear();
-          }
-          function clickEdit( e ) { 
-            closeTrackEditor(); 
-          }
-          function changeTarget( e ) { 
+          function changeTarget( e ) {
             editor.json = this.value;
           }
 
-          document.getElementById( "cancel-track-edit" ).addEventListener( "click", clickCancel, false );
           document.getElementById( "apply-track-edit" ).addEventListener( "click", clickApply, false );
           document.getElementById( "ok-track-edit" ).addEventListener( "click", clickOk, false );
           document.getElementById( "delete-track-edit" ).addEventListener( "click", clickDelete, false );
@@ -397,7 +459,9 @@
       }, false);
 
       document.getElementsByClassName( "play-btn" )[ 0 ].addEventListener( "click", function( event ) {
-        pm.currentProject.preview.playing ? pm.currentProject.preview.pause() : pm.currentProject.preview.play();
+        if ( pm.mediaAccessAllowed ) {
+          pm.currentProject.preview.playing ? pm.currentProject.preview.pause() : pm.currentProject.preview.play();
+        } //if
       }, false);
 
       butter.listen( "mediaplaying", function( event ) {

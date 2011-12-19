@@ -9,13 +9,6 @@
 
       popupManager.addPopup( "welcome", "#welcome-popup" );
 
-      //Carousel for Help inner page
-      $(function(){
-        $('.slides').slides({
-          preload: true,
-          generateNextPrev: true
-        });
-      });
       //Popup sliding
       $('.import-scroll-toggler').click(function() {
         $(".scroll-popup-container.spc-add-project").animate({
@@ -39,6 +32,7 @@
           popupManager.showPopup( "add-project" );
         }
       });
+
       buttonManager.add( "wizard-create-new", $('.wizard-create-new-btn'), {
         click: function() {
           popupManager.hidePopups();

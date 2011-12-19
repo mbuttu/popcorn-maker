@@ -28,11 +28,11 @@
 
       var mediaChangedHandler = function( e ) {
         if ( link.currentMedia ) {
-          link.currentMedia.removeHandlers( comm );
+          link.removeMediaHandlers( comm );
         }
         var currentMedia = link.currentMedia = link.getMedia( e.data.id );
         if ( currentMedia ) {
-          currentMedia.addHandlers( comm, {
+          link.addMediaHandlers({
             'trackeventadded': trackEventAddedHandler,
             'trackeventupdated': trackEventUpdatedHandler,
             'trackeventremoved': trackEventRemovedHandler,
@@ -126,6 +126,7 @@
         onmediacontentchanged: mediaContentChangedHandler,
         onfetchhtml: fetchHTMLHandler,
         defaultMedia: options.defaultMedia,
+        exportBaseUrl: options.exportBaseUrl,
         importData: options.importData,
         popcornUrl: options.popcornUrl
       });
@@ -145,27 +146,19 @@
         } //isPopcornReady
 
         function popcornIsReady() {
-          media.clearPopcorn();
-          media.destroyPopcorn();
-          if ( media.target ) {
-            document.getElementById( media.target ).innerHTML = "";
-          } //if
-          media.prepareMedia( media.findMediaType() );
-          try {
-            media.createPopcorn( media.generatePopcornString() );
-            media.waitForPopcorn( function( popcorn ) {
-              media.setupPopcornHandlers( comm );
+          media.clear();
+          media.prepare({
+            success: function( successOptions ) {
+              link.setupPopcornHandlers();
               callback( media );
-            });
-          }
-          catch( e ) {
-            comm.send({
-              message: "Couldn't instantiate popcorn instance: [" + e.fileName + ": " + e.message + "]",
-              context: "previewer::buildMedia::popcornIsReady",
-              type: "popcorn-initialization",
-              error: JSON.stringify( e )
-            }, "error" );
-          } //try
+            },
+            timeout: function() {
+              link.sendTimeoutError( media );
+            },
+            error: function( e ) {
+              link.sendLoadError( e );
+            }
+          });
         } //popcornIsReady
 
         if ( !window.Popcorn ) {
@@ -187,7 +180,7 @@
       link.scrape();
 
     }; //BasicLink
-    
+
     return BasicLink;
 
   }); //define

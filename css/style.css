@@ -868,27 +868,6 @@ ul.actions li.bubble_pointer
 {
 	background-position: -220px -64px;
 }
-.track-event
-{
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-	color: #333;
-	cursor: move;
-	display: block;
-	font: normal 10px/25px Arial, Helvetica, sans-serif;
-	height: 25px;
-	line-height: 25px;
-	moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-	o-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-	opacity: 0.8;
-	position: absolute;
-	text-align: center;
-	text-transform: uppercase;
-	webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-}
-.track-event:hover
-{
-	opacity: 1;
-}
 .dd
 {
 	background-color: #666;
@@ -1243,15 +1222,15 @@ ul.actions li.bubble_pointer
 }
 .project-title-textbox,.save-prj-lbl
 {
-	height: auto;
+	height: 14px;
 	margin: 0;
-	padding: 7px 0;
+	padding: 5px 0;
 	position: absolute;
-	top: 50px;
+	top: 56px;
 }
 .project-title-textbox
 {
-	left: 30px;
+	left: 55px;
 	width: 130px !important;
 }
 .save-prj-lbl
@@ -1300,7 +1279,7 @@ ul.actions li.bubble_pointer
 	border: 1px solid #282828 !important;
 	color: #ccc;
 	float: left;
-	margin-left: 60px;
+	margin-left: 70px;
 	padding: 5px 10px;
 }
 .pin
@@ -1501,7 +1480,7 @@ p.copyright a:last-child
 {
 	float: left;
 	padding: 20px 0;
-	width: 350px;
+	width: 600px;
 }
 #welcome-popup .left-div p.desc
 {
@@ -1513,16 +1492,14 @@ p.copyright a:last-child
 }
 #welcome-popup .left-div ul
 {
-	overflow: visible;
+
 	text-align: left;
 }
 #welcome-popup .left-div li
 {
 	font-size: 17px;
-	margin-bottom: 20px;
+
 	min-height: 55px;
-	padding: 5px 0 0 65px;
-	position: relative;
 }
 #welcome-popup .left-div li span
 {
@@ -1543,16 +1520,7 @@ p.copyright a:last-child
 	webkit-border-radius: 30px;
 	width: 50px;
 }
-#welcome-popup .save-btn,#welcome-popup .add-btn
-{
-	display: inline-block;
-	float: none;
-	margin: 10px 10px 0;
-}
-#welcome-popup .save-btn
-{
-	margin-top: -8px;
-}
+
 #welcome-popup .left-div li a
 {
 	color: #80BA4E;
@@ -1565,7 +1533,7 @@ p.copyright a:last-child
 #welcome-popup .left-div li img
 {
 	float: right;
-	margin: -22px -15px 0 0;
+	margin: -22px -30px 0 0;
 }
 #welcome-popup .left-div li p
 {
@@ -1626,7 +1594,7 @@ p.copyright a:last-child
 }
 .edit-target-popup
 {
-	width: 600px;
+	width: 700px;
 }
 .edit-target-popup p
 {
@@ -1928,7 +1896,7 @@ p.copyright a:last-child
 	o-box-shadow: inset 0 1px 0 #5d5d5d;
 	webkit-box-shadow: inset 0 1px 0 #5d5d5d;
 }
-.timeline-heading,.enable-scroll,.track-event
+.timeline-heading,.enable-scroll
 {
 	border-radius: 5px;
 	moz-border-radius: 5px;
@@ -2084,19 +2052,6 @@ p.desc
 	height: 100%;
 	width: 100%;
 }
-.butter-track-event
-{
-	background-color: #ff3;
-	background-image: -moz-linear-gradient(center bottom,#ff0 0,#C8C800 100%);
-	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0,#ff0),color-stop(1,#C8C800));
-	overflow: hidden;
-}
-.butter-track-event.footnote
-{
-	background-color: #8dd75a;
-	background-image: -moz-linear-gradient(center bottom,#47801E 0,#8CD75A 100%);
-	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, #47801E),color-stop(1,#8CD75A));
-}
 .edit-track-button
 {
 	background-image: -moz-linear-gradient(top, #eee, #999);
@@ -2189,6 +2144,12 @@ p.desc
 .input-title-text
 {
 	font-weight: bolder;
+  font-size: 110%;
+}
+#template-description
+{
+  width: 360px; 
+  height: 1em;
 }
 .import-screen-toggle, .new-proj-screen-toggle
 {
@@ -2372,4 +2333,35 @@ color-stop(1, rgb(255,255,255))
 {
 	height: 100px;
 	width: 100px;
+}
+
+.projects-list
+{
+  width: 125px;
+}
+.project-info-div
+{
+  float: right;
+  width: 260px;
+  height: 185px;
+}
+.project-info-div span
+{
+  width: 100%;
+}
+div.edit-project-buttons-div
+{
+  width: 260px;
+  float: right;
+}
+input#project-title-input-box
+{
+  width: 160px;
+}
+.edit-project-buttons-div p.desc {
+    width: 260px !important;
+    font-size: 9pt;
+}
+A.credit-href {
+  text-decoration: underline;
 }

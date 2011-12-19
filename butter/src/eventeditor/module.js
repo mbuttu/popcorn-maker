@@ -1,4 +1,4 @@
-/**********************************************************************************
+/*********************************************************************************
 
 Copyright (C) 2011 by Mozilla Foundation
 
@@ -65,10 +65,11 @@ THE SOFTWARE.
 
         this.construct = function( trackEvent ) {
           var updateEditor = function( e ){
-            commServer.send( editorLinkName, {
+            var sendObj = {
               "id": e.data.id, 
               "options": e.data.popcornOptions
-            }, "trackeventupdated" );
+            };
+            commServer.send( editorLinkName, sendObj, "trackeventupdated" );
           };
           var checkRemoved = function( e ) {
             commServer.send( editorLinkName, e.data.id, "trackeventremoved" );
@@ -122,7 +123,6 @@ THE SOFTWARE.
               commServer.listen( editorLinkName, "okayclicked", function( e ){
                 var newOptions = e.data;
                 filterKnownFields( newOptions );
-                trackEvent.popcornOptions = newOptions;
                 if ( targetWindow.close ) {
                   targetWindow.close();
                 }
@@ -131,14 +131,14 @@ THE SOFTWARE.
                 }
                 undoListeners();
                 targetWindow = undefined;
-                em.dispatch( "trackeventupdated", trackEvent );
+                trackEvent.update( newOptions );
                 em.dispatch( "trackeditclosed", that );
               });
 
-              commServer.listen( editorLinkName, "applyclicked", function( newOptions ) {
+              commServer.listen( editorLinkName, "applyclicked", function( e ) {
+                var newOptions = e.data;
                 filterKnownFields( newOptions );
-                trackEvent.popcornOptions = newOptions;
-                em.dispatch( "trackeventupdated", trackEvent );
+                trackEvent.update( newOptions );
               });
 
               commServer.listen( editorLinkName, "deleteclicked", function() {
@@ -317,7 +317,6 @@ THE SOFTWARE.
       init: function( butter, options ) {
         var ee = new EventEditor( butter, options );
         ee.listen( "clientdimsupdated", butter.eventManager.repeat );
-        ee.listen( "trackeventupdated", butter.eventManager.repeat );
         ee.listen( "trackeventupdated", butter.eventManager.repeat );
         ee.listen( "trackeditstarted", butter.eventManager.repeat );
         ee.listen( "trackeditclosed", butter.eventManager.repeat );
