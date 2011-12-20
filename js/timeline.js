@@ -122,15 +122,15 @@
       });
 
       var sliderElement = $( "#slider" );
-      sliderElement.slider({
-        value: 1,
-        min: 1,
-        max: 7,
-        step: 1,
-        slide: function( event, ui ) {
-          slideValue = zoom( slideValue - ui.value );
-        }
-      });
+      //sliderElement.slider({
+      //  value: 1,
+      //  min: 1,
+      //  max: 7,
+      //  step: 1,
+      //  slide: function( event, ui ) {
+      //    slideValue = zoom( slideValue - ui.value );
+      //  }
+      //});
 
       var zoom = function( delta ) {
 
