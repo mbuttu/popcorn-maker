@@ -322,6 +322,7 @@ THE SOFTWARE.
         while ( medias.length > 0 ) {
           that.removeMedia( medias[ 0 ] );
         }
+        Track.guid = 0;
       };
 
       /****************************************************************
