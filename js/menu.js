@@ -103,17 +103,24 @@
 
       buttonManager.add( "change-url", $( ".change-url-btn" ), {
         click: function() {
-          $(".media-title-div").html( $('#url').val() );
+          var newUrl = $('#url').val(),
+          oldUrl = butter.currentMedia.url;
           popupManager.hidePopups();
-          var newUrl = $('#url').val();
           if ( newUrl !== butter.currentMedia.url ) {
-            butter.currentMedia.url = ( $('#url').val() );
+            butter.currentMedia.url = newUrl;
+            $(".media-title-div").html( newUrl );
             pm.toggleLoadingScreen( true );
             function changeComplete( media ) {
               pm.toggleLoadingScreen( false );
               butter.unlisten( "mediacontentchangecomplete", changeComplete );
             }
+            function changeError( media ) {
+              butter.currentMedia.url = oldUrl;
+              $(".media-title-div").html( oldUrl );
+              butter.unlisten( "previewerfail", changeError );
+            }
             butter.listen( "mediacontentchangecomplete", changeComplete );
+            butter.listen( "previewerfail", changeError );
           } //if
         } //click
       }); //change-url-btn
