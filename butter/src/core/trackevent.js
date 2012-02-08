@@ -16,7 +16,13 @@
           popcornOptions = options.popcornOptions || {
             start: that.start,
             end: that.end
+          },
+          round = function( number, numberOfDecimalPlaces ) {
+            return Math.round( number * ( Math.pow( 10, numberOfDecimalPlaces ) ) ) / Math.pow( 10, numberOfDecimalPlaces );
           };
+
+      popcornOptions.start = round( popcornOptions.start, 3 );
+      popcornOptions.end = round( popcornOptions.end, 3 );
 
       em.apply( "TrackEvent", this );
 
@@ -26,6 +32,12 @@
             popcornOptions[ prop ] = updateOptions[ prop ];
           } //if
         } //for
+        if ( popcornOptions.start ) {
+          popcornOptions.start = round( popcornOptions.start, 3 );
+        }
+        if ( popcornOptions.end ) {
+          popcornOptions.end = round( popcornOptions.end, 3 );
+        }
         em.dispatch( "trackeventupdated", that );
       }; //update
 
